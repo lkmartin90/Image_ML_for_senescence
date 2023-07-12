@@ -13,6 +13,10 @@ E31_LaminB1_P21_analysis.ipynb is a notebook with a step-by-step explanation of 
   * E53_220323_P21_LaminB1Image.csv
 ### E31_LaminB1_P21_data:
   * E31_LOPAC_data_processing.py
+    - Code to process the raw output data from the cell Profiler pipeline (not published), removing unnecessary data including stains other than the DAPI
   * E31_LOPAC_from_pickle.py
+    - Takes the output of "E31_LOPAC_data_processing.py" and "E31_SVM_model.sav", to apply our SVM to the LOPAC drug discovery data.
   * E31_SVM_model.sav
+    - Pickled SVM model trained on the LaminB1 and P21 data.
   * E31_train_SVM.py
+    - Code to train SVM on the LaminB1 and P21 data, producing "E31_SVM_model.sav".
