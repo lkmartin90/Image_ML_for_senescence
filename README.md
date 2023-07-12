@@ -9,8 +9,11 @@ E31_LaminB1_P21_analysis.ipynb is a notebook with a step-by-step explanation of 
 
 ### E31_drug_discovery:
   * E31_050423_P21_LaminB1DilatedNuclei_1.csv.zip
+    - Data from the CellProfiler pipeline, with the slightly dilated nuclear size to capture the LaminB1 ring. Includes features for each cell in the fluorescence microscopy images. 
   * E31_050423_P21_LaminB1NucleiObject.csv.zip
-  * E53_220323_P21_LaminB1Image.csv
+    - Data from the Cellprofiler pipeline, from the undilated cell detection, containing accurate cell morphology info and DAPI stain. Includes features for each cell in the fluorescence microscopy images.
+  * E31_050423_P21_LaminB1Image.csv
+     - data from the CellProfiler pipeline describing a full image, including background stain intensities. 
 ### E31_LaminB1_P21_data:
   * E31_LOPAC_data_processing.py
     - Code to process the raw output data from the cell Profiler pipeline (not published), removing unnecessary data including stains other than the DAPI
