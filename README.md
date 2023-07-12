@@ -33,3 +33,4 @@ E31_LaminB1_P21_analysis.ipynb is a notebook with a step-by-step explanation of 
 * Run *E31_train_SVM.py*, which takes as input the data in file *E31_drug_discovery*. This produces *E31_SVM_model.sav*, a pickled version of the SVM model trained on our LaminB1 and P21 data. For a detailed version of the analysis in this script, see *E31_LaminB1_P21_analysis.ipynb*.
 * Run *E31_LOPAC_from_pickle*, must have input files *E31_LOPAC_data.csv* and *E31_SVM_model.sav*, outputs *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*.
 * Run *E31_DMSO_bootstrapping_LOPAC.py*, must have input files *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*, outputs "E31_LOPAC_with_bootstrap.csv".
+* Run *E31_LOPAC_datavis.ipynb* to visualise data, must have input file *E31_LOPAC_with_bootstrap.csv*.
