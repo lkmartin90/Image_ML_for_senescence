@@ -26,7 +26,7 @@ E31_LaminB1_P21_analysis.ipynb is a notebook with a step-by-step explanation of 
   * E31_senscore_LOPAC.csv
     - File containing the senescence score associated with each compound in the LOPAC dataset, and the fraction of cells predicted to be senescent.
   * E31_DMSO_bootstrapping_LOPAC.py
-    - Takes as input *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*. Bootstraps the DMSO controls for each plate to find significant senescence scores at each cell number. Outputs "E31_LOPAC_with_bootstrap.csv".
+    - Takes as input *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*. Bootstraps the DMSO controls for each plate to find significant senescence scores at each cell number. Outputs *E31_LOPAC_with_bootstrap.csv*.
 
 # Pipeline:
 
