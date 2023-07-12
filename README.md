@@ -1,11 +1,14 @@
 # Image_ML_for_senescence
 Machine learning to detect senescent glioblastoma cells and to find compounds which induce senescence.
 
-Functions called by other files are found in "functions.py" and should be commented well enough that they are self-explanatory. 
-
-E31_LaminB1_P21_analysis.ipynb is a notebook with a step-by-step explanation of our analysis of our data for cell line E31. 
-
 ## File structure: 
+
+* E31_LaminB1_P21_analysis.ipynb:
+  - A notebook with a step-by-step explanation of our analysis of our data for cell line E31.
+* functions.py:
+  - functions called by other files, this should be commented well enough that the functions are self-explanatory.
+* find_interesting_compounds.ipynb
+  - Take all the processed data and find compounds that induce senescence in both cell types. 
 
 ### E31_LaminB1_P21_data:
   * E31_050423_P21_LaminB1DilatedNuclei_1.csv.zip
@@ -29,10 +32,21 @@ E31_LaminB1_P21_analysis.ipynb is a notebook with a step-by-step explanation of 
     - Takes as input *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*. Bootstraps the DMSO controls for each plate to find significant senescence scores at each cell number. Outputs *E31_LOPAC_with_bootstrap.csv*.
   * E31_LOPAC_datavis.ipynb
     - Takes the output of *E31_DMSO_bootstrapping_LOPAC.py* and visualises the compounds, produces *E31_bootstrap_LOPAC_compounds.csv* and *E31_bootstrap_higher_compounds_fraction.csv*.
+   * Compounds.csv
+     - list of targetmol compounds and concentrations.
+    
+ Substituting "LOPAC", with "targetmol", gives the correct file descriptions for the targetmol data.
+
+ ### E57_drug_discovery:
+ Substituting "E31", with "E57", gives the correct file descriptions for E57.
+
 
 # Pipeline:
 
-* Run *E31_train_SVM.py*, which takes as input the data in file *E31_drug_discovery*. This produces *E31_SVM_model.sav*, a pickled version of the SVM model trained on our LaminB1 and P21 data. For a detailed version of the analysis in this script, see *E31_LaminB1_P21_analysis.ipynb*.
-* Run *E31_LOPAC_from_pickle*, must have input files *E31_LOPAC_data.csv* and *E31_SVM_model.sav*, outputs *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*.
-* Run *E31_DMSO_bootstrapping_LOPAC.py*, must have input files *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*, outputs *E31_LOPAC_with_bootstrap.csv*.
-* Run *E31_LOPAC_datavis.ipynb* to visualise data, must have input file *E31_LOPAC_with_bootstrap.csv*, outputs *E31_bootstrap_LOPAC_compounds.csv* and *E31_bootstrap_higher_compounds_fraction.csv*.
+1. Run *E31_train_SVM.py*, which takes as input the data in file *E31_drug_discovery*. This produces *E31_SVM_model.sav*, a pickled version of the SVM model trained on our LaminB1 and P21 data. For a detailed version of the analysis in this script, see *E31_LaminB1_P21_analysis.ipynb*.
+2. Run *E31_LOPAC_from_pickle*, must have input files *E31_LOPAC_data.csv* and *E31_SVM_model.sav*, outputs *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*.
+3. Run *E31_DMSO_bootstrapping_LOPAC.py*, must have input files *E31_senscore_LOPAC.csv* and *E31_LOPAC_full_data.csv*, outputs *E31_LOPAC_with_bootstrap.csv*.
+4. Run *E31_LOPAC_datavis.ipynb* to visualise data, must have input file *E31_LOPAC_with_bootstrap.csv*, outputs *E31_bootstrap_LOPAC_compounds.csv* and *E31_bootstrap_higher_compounds_fraction.csv*.
+5. Run steps 2 - 5 again, replacing "LOPAC" with "targetmol".
+6. Run steps 1 - 5 again, replacing E31 with E57.
+7. Run *find_interesting_compounds.ipynb* to find compounds that induce senescence in both cell types.
