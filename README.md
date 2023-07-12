@@ -16,10 +16,16 @@ E31_LaminB1_P21_analysis.ipynb is a notebook with a step-by-step explanation of 
      - data from the CellProfiler pipeline describing a full image, including background stain intensities. 
 ### E31_LaminB1_P21_data:
   * E31_LOPAC_data_processing.py
-    - Code to process the raw output data from the cell Profiler pipeline (not published), removing unnecessary data including stains other than the DAPI
+    - Code to process the raw output data from the cell Profiler pipeline (not published), removing unnecessary data including stains other than the DAPI. Outputs *E31_LOPAC_data.csv*, which is too large to share via github.  
   * E31_LOPAC_from_pickle.py
-    - Takes the output of "E31_LOPAC_data_processing.py" and "E31_SVM_model.sav", to apply our SVM to the LOPAC drug discovery data.
+    - Takes *E31_LOPAC_data.csv* and *E31_SVM_model.sav*, to apply our SVM to the LOPAC drug discovery data.
   * E31_SVM_model.sav
     - Pickled SVM model trained on the LaminB1 and P21 data.
   * E31_train_SVM.py
-    - Code to train SVM on the LaminB1 and P21 data, producing "E31_SVM_model.sav".
+    - Code to train SVM on the LaminB1 and P21 data, producing *E31_SVM_model.sav*.
+
+# Pipeline:
+
+* Run *E31_train_SVM.py*, which takes as input the data in file *E31_drug_discovery*. This produces *E31_SVM_model.sav*, a pickled version of the SVM model trained on our LaminB1 and P21 data. For a detailed version of the analysis in this script, see *E31_LaminB1_P21_analysis.ipynb*.
+* Run *E31_LOPAC_from_pickle*, must have input files *E31_LOPAC_data.csv* and *E31_SVM_model.sav*.
+* 
