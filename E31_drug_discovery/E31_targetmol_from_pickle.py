@@ -1,30 +1,7 @@
-import numpy as np
 import pandas as pd
-import os
-import umap
 from sklearn.preprocessing import StandardScaler
 import plotly.express as px
-from sklearn.decomposition import PCA
-import plotly.graph_objects as go
-import hdbscan
-import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
-from sklearn.model_selection import train_test_split
-from sklearn import svm
-from sklearn import metrics
-from sklearn.inspection import permutation_importance
 from functions import *
-import scipy.cluster.hierarchy as sch
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import RocCurveDisplay
-from sklearn.metrics import auc
-from sklearn.metrics import roc_curve
-import glob
-import random
 
 ################################################################################################
 ## Test on drug discovery data
