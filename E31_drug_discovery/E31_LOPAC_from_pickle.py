@@ -18,7 +18,7 @@ clf_svm_2 = pickle.load(open('E31_SVM_model.sav', 'rb'))
 # against each other. To start with we will not correct features that will vary by cell density, as later cell no.
 # varies as drugs kill off cells, but correction would still be applied.
 
-LOPAC_meta = pd.read_csv("/home/lucymartin/Documents/XDF/Cell_image_processing_code/drug_screen_metadata/GCGR-Lpc-Metadata.csv")
+LOPAC_meta = pd.read_csv("GCGR-Lpc-Metadata.csv")
 LOPAC_meta['Barcode'] = LOPAC_meta['Barcode'].str.replace('.', '-')
 drug_data_temp = drug_data_tot.copy()
 
