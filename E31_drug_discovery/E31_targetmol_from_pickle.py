@@ -87,9 +87,9 @@ tot_sen = grouped_dat.sum()["sen_prediction"]
 
 index_sen_score = grouped_dat.mean().index
 
-px.scatter(y=drug_pred_probs, x=np.arange(len(drug_pred_probs)))
+#px.scatter(y=drug_pred_probs, x=np.arange(len(drug_pred_probs)))
 
-px.scatter(y=mean_sen_score, error_y=std_sen_score, x=list([x[0] + "_" + x[1] for x in index_sen_score]))
+#px.scatter(y=mean_sen_score, error_y=std_sen_score, x=list([x[0] + "_" + x[1] for x in index_sen_score]))
 
 # find the number of cells in each well
 
