@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 import pandas as pd
 from functions import *
 from random import choices
