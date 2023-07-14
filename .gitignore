@@ -2,3 +2,12 @@
 /E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1DilatedNuclei_1.csv
 /E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1NucleiObject.csv
 /E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1DilatedNuclei_1.csv
+/E31_drug_discovery/E31_bootstrap_higher_compounds.csv
+/E31_drug_discovery/E31_bootstrap_higher_compounds_fraction.csv
+/E31_drug_discovery/E31_LOPAC_data.csv
+/E31_drug_discovery/E31_LOPAC_full_data.csv
+/E31_drug_discovery/E31_LOPAC_with_bootstrap.csv
+/E31_drug_discovery/E31_senscore_targetmol.csv
+/E31_drug_discovery/E31_targetmol_data.csv
+/E31_drug_discovery/E31_targetmol_full_data.csv
+/E31_drug_discovery/E31_targetmol_with_bootstrap.csv
