@@ -19,3 +19,7 @@
 /E57_drug_discovery/E57_senscore_LOPAC.csv
 /E57_drug_discovery/E57_targetmol_with_bootstrap.csv
 /E57_drug_discovery/E57_LOPAC_with_bootstrap.csv
+/E57_drug_discovery/E57_bootstrap_higher_compounds.csv
+/E57_drug_discovery/E57_bootstrap_higher_compounds_fraction.csv
+/E57_drug_discovery/E57_bootstrap_LOPAC_compounds.csv
+/E57_drug_discovery/E57_bootstrap_LOPAC_compounds_fraction.csv
