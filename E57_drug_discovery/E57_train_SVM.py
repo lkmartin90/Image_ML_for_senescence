@@ -21,17 +21,36 @@ import pickle
 
 ##  Read in data and pre-process
 
-E_31_NucleiObject = pd.read_csv("../E31_LaminB1_P21_data/E31_050423_P21_LaminB1NucleiObject.csv")
-E_31_NucleiObject = data_processing_Nuclei(E_31_NucleiObject)
-E_31_DilatedNuclei = pd.read_csv("../E31_LaminB1_P21_data/E31_050423_P21_LaminB1DilatedNuclei_1.csv")
-E_31_DilatedNuclei = data_processing_Dilated(E_31_DilatedNuclei)
+E_57_control_NucleiObject = pd.read_csv("../E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1NucleiObject.csv")
+E_57_radiated_NucleiObject = pd.read_csv("../E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1NucleiObject.csv")
+
+E_57_control_NucleiObject = data_processing_Nuclei(E_57_control_NucleiObject)
+E_57_radiated_NucleiObject = data_processing_Nuclei(E_57_radiated_NucleiObject)
+
+E_57_control_DilatedNuclei = pd.read_csv("../E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1DilatedNuclei_1.csv")
+E_57_control_DilatedNuclei = data_processing_Dilated(E_57_control_DilatedNuclei)
+E_57_radiated_DilatedNuclei = pd.read_csv("../E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1DilatedNuclei_1.csv")
+E_57_radiated_DilatedNuclei = data_processing_Dilated(E_57_radiated_DilatedNuclei)
+
+control_data = pd.concat([E_57_control_NucleiObject, E_57_control_DilatedNuclei], axis=1)
+radiated_data = pd.concat([E_57_radiated_NucleiObject, E_57_radiated_DilatedNuclei], axis=1)
+
+control_data['Metadata_Radiated'] = "control"
+radiated_data['Metadata_Radiated'] = "radiated"
+
+control_data["CELL_ID"] = control_data['Metadata_CellLine'].astype(str) +"_"+ control_data['ImageNumber'].astype(str) +"_"+  control_data['ObjectNumber'].astype(str) +"_"+  control_data['Metadata_Radiated'].astype(str)
+radiated_data["CELL_ID"] = radiated_data['Metadata_CellLine'].astype(str) +"_"+ radiated_data['ImageNumber'].astype(str) +"_"+  radiated_data['ObjectNumber'].astype(str) +"_"+  radiated_data['Metadata_Radiated'].astype(str)
+control_data = control_data.set_index("CELL_ID")
+radiated_data = radiated_data.set_index("CELL_ID")
 
 # create one data object containing all the data
-data = pd.concat([E_31_NucleiObject, E_31_DilatedNuclei], axis=1)
+data = pd.concat([control_data, radiated_data])
+data['Rad_number'] = data['Metadata_Radiated'].astype(str) +"_"+ data['ImageNumber'].astype(str)
 
 ## Rescale intensity measures based on background levels
 
-E_31_image = pd.read_csv("../E31_LaminB1_P21_data/E31_050423_P21_LaminB1Image.csv")
+E_57_image_control = pd.read_csv("../E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1Image.csv")
+E_57_image_radiated = pd.read_csv("../E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1Image.csv")
 
 fig = px.histogram(data, x='Intensity_MeanIntensity_CorrP21', color='ImageNumber', nbins=2000)
 fig.update_layout(
@@ -49,7 +68,7 @@ fig.update_traces(opacity=0.75)
 fig.show()
 
 # subtract background from each image
-data = rescale_from_background(data, E_31_image)
+data = rescale_from_background_E55(data, E_57_image_control, E_57_image_radiated)
 
 fig = px.histogram(data, x='Intensity_MeanIntensity_CorrP21', color='ImageNumber', nbins=1000)
 fig.update_layout(
@@ -75,11 +94,11 @@ data = data.dropna(axis='columns')
 
 ## Remove cells that are an outlier in many catagories
 
-data = find_outliers(data, 70)
+data = find_outliers_E55(data, 70)
 
 ## Filter based on cell size
 
-data = data[data['AreaShape_Area'] > 180]
+data = data[data['AreaShape_Area'] > 150]
 
 ## Filter based on Std dev
 
@@ -91,15 +110,15 @@ data = create_new_features(data)
 
 ## Use this to add a column labelling those with low LaminB1 and high P21 as senescent
 
-Lam_cutoff = 0.006
-P21_cutoff = 0.0115
+Lam_cutoff = 0.0042
+P21_cutoff = 0.0022
 
 data['Senescent'] = 0
 data.loc[(data.Intensity_MeanIntensity_CorrLaminB1 < Lam_cutoff) & (
             data.Intensity_MeanIntensity_CorrP21 > P21_cutoff), 'Senescent'] = 1
 
-Lam_cutoff_1 = 0.0063
-P21_cutoff_1 = 0.01
+Lam_cutoff_1 = 0.005
+P21_cutoff_1 = 0.0019
 
 data['Not Senescent'] = 0
 data.loc[(data.Intensity_MeanIntensity_CorrLaminB1 > Lam_cutoff_1) & (
@@ -121,7 +140,7 @@ data = project_onto_line_pca(data, 'Intensity_MeanIntensity_CorrLaminB1', 'Inten
 data_for_umap = data.dropna(axis='columns')
 data_for_umap = data_for_umap.drop(
     ['Metadata_CellLine', 'ImageNumber', 'ObjectNumber', 'Metadata_Radiated', 'Number_Object_Number', 'Senescent',
-     'Not Senescent', 'x_proj', 'y_proj'], axis=1)
+     'Not Senescent', 'x_proj', 'y_proj', 'Rad_number'], axis=1)
 
 ## Include option to remove granularity
 
@@ -145,7 +164,7 @@ data_for_pca = data_for_pca.dropna()
 # drop metedata
 data_for_pca_coldrop = data_for_pca.drop(
     ['Metadata_CellLine', 'ImageNumber', 'ObjectNumber', 'Metadata_Radiated', 'Number_Object_Number', 'Senescent',
-     'x_proj', 'y_proj'], axis=1)
+     'x_proj', 'y_proj', 'Rad_number'], axis=1)
 
 ####################################################################
 # Machine learning
@@ -242,16 +261,16 @@ results_df = results_df.sort_values(by=[0])
 
 px.histogram(x=pred_probs_svm)
 
-plot_ordered_classifier_score(results_df, "E31", "SVM")
+plot_ordered_classifier_score(results_df, "E57", "SVM")
 
 x_test_plot = x_test.copy()
 
 tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
 tsne_results_test = tsne.fit_transform(x_test_plot)
 
-plot_projection("E31 TSNE on PCA coloured by SVM classifier score ", tsne_results_test, pred_probs_svm)
+plot_projection("E57 TSNE on PCA coloured by SVM classifier score ", tsne_results_test, pred_probs_svm)
 
-plot_projection("E31 TSNE on PCA coloured by p21 senescence classification ", tsne_results_test, y_test)
+plot_projection("E57 TSNE on PCA coloured by p21 senescence classification ", tsne_results_test, y_test)
 
 ## Test and train on sensesent and non-sen
 
@@ -346,8 +365,7 @@ fig.update_layout(
     xaxis_title="Fraction of cells tested on",
     yaxis_title="Metric")
 
-
 ## pickle
 
-filename = 'E31_SVM_model.sav'
+filename = 'E57_SVM_model.sav'
 pickle.dump(clf_svm_2, open(filename, 'wb'))
