@@ -71,6 +71,8 @@ drug_data_scaled = StandardScaler().fit_transform(drug_data_reduced)
 drug_pred = clf_svm_2.predict(drug_data_scaled)
 drug_pred_probs = clf_svm_2.decision_function(drug_data_scaled)
 
+drug_data_tot = drug_data_tot.drop(drug_data_reduced.columns, axis=1)
+
 del drug_data_scaled
 del drug_data_reduced
 

@@ -9,8 +9,6 @@ from random import choices
 ########################################################
 
 drug_data_tot = pd.read_csv('E31_LOPAC_full_data.csv')
-drug_data_tot["well_ending"] = drug_data_tot["Metadata_well"].str[1:]
-drug_data_tot["row"] = drug_data_tot["Metadata_well"].str[:1]
 drug_data_tot = drug_data_tot.set_index("ID")
 
 ########################################################
