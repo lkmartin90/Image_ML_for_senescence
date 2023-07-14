@@ -2,8 +2,7 @@ import sys
 sys.path.append("..")
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-import plotly.express as px
-from functions import *
+import pickle
 
 ################################################################################################
 ## Test on drug discovery data
@@ -13,6 +12,8 @@ drug_data_tot = pd.read_csv("E31_targetmol_data.csv", index_col=False)
 drug_data_tot = drug_data_tot.drop("Unnamed: 0", axis = 1)
 
 clf_svm_2 = pickle.load(open('E31_SVM_model.sav', 'rb'))
+
+drug_data_tot["row"] = drug_data_tot["Metadata_well"].str[:1]
 
 # AT this stage, before irrelevant features are deleted, we need to correct the intensity of different plates
 # against each other. To start with we will not correct features that will vary by cell density, as later cell no.

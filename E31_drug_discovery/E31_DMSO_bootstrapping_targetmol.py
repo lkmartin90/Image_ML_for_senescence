@@ -8,14 +8,14 @@ from random import choices
 ## Import full data
 ########################################################
 
-drug_data_tot = pd.read_csv('E31_targetmol_full_data')
+drug_data_tot = pd.read_csv('E31_targetmol_full_data.csv')
 drug_data_tot["well_ending"] = drug_data_tot["Metadata_well"].str[1:]
 
 ########################################################
 ## Import senscore data
 ########################################################
 
-all_data = pd.read_csv("E31_senscore.csv")
+all_data = pd.read_csv("E31_senscore_targetmol.csv")
 
 all_data["ID"] = all_data["Metadata_platename"] + "_" + all_data["Metadata_well"]
 
