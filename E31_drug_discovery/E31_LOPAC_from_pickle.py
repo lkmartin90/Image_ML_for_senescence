@@ -27,6 +27,8 @@ compound = (LOPAC_meta.set_index(['Barcode', "Well Name"])['chemical_name'])
 drug_data_temp["compound"] = compound
 drug_data_tot["compound"] = list(drug_data_temp["compound"])
 
+del drug_data_temp
+
 DMSO_grouped_means = pd.DataFrame(drug_data_tot[drug_data_tot["compound"] == "DMSO"].groupby(["Metadata_platename"]).mean())
 # DMSO_grouped_means now contains the mean of DMSO samples in 01 and 02 wells, for each plate
 plate_names = list(DMSO_grouped_means.index)
@@ -68,6 +70,9 @@ drug_data_scaled = StandardScaler().fit_transform(drug_data_reduced)
 # apply the classifier to the drug discovery data
 drug_pred = clf_svm_2.predict(drug_data_scaled)
 drug_pred_probs = clf_svm_2.decision_function(drug_data_scaled)
+
+del drug_data_scaled
+del drug_data_reduced
 
 # we produce a senescence score for each cell
 # want to scale that score by the minimum so that we have no negative values

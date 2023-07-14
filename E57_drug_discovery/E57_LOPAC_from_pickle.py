@@ -13,6 +13,7 @@ drug_data_tot = drug_data_tot.drop("Unnamed: 0", axis = 1)
 
 clf_svm_2 = pickle.load(open('E57_SVM_model.sav', 'rb'))
 
+
 # AT this stage, before irrelevant features are deleted, we need to correct the intensity of different plates
 # against each other. To start with we will not correct features that will vary by cell density, as later cell no.
 # varies as drugs kill off cells, but correction would still be applied.
@@ -26,6 +27,8 @@ compound = (LOPAC_meta.set_index(['Barcode', "Well Name"])['chemical_name'])
 
 drug_data_temp["compound"] = compound
 drug_data_tot["compound"] = list(drug_data_temp["compound"])
+
+del drug_data_temp
 
 DMSO_grouped_means = pd.DataFrame(drug_data_tot[drug_data_tot["compound"] == "DMSO"].groupby(["Metadata_platename"]).mean())
 # DMSO_grouped_means now contains the mean of DMSO samples in 01 and 02 wells, for each plate
@@ -68,6 +71,9 @@ drug_data_scaled = StandardScaler().fit_transform(drug_data_reduced)
 drug_pred = clf_svm_2.predict(drug_data_scaled)
 drug_pred_probs = clf_svm_2.decision_function(drug_data_scaled)
 
+del drug_data_scaled
+del drug_data_reduced
+
 # we produce a senescence score for each cell
 # want to scale that score by the minimum so that we have no negative values
 
@@ -109,5 +115,7 @@ output_data["cell_no"] = cell_no
 output_data["number_sen"] = tot_sen
 
 output_data.to_csv('E57_senscore_LOPAC.csv')
+print("senscore saved")
 drug_data_tot["ID"] = drug_data_tot["Metadata_platename"] + "_" + drug_data_tot["Metadata_well"]
 drug_data_tot.to_csv('E57_LOPAC_full_data.csv')
+print("total data saved")

@@ -13,3 +13,5 @@
 /E31_drug_discovery/E31_targetmol_with_bootstrap.csv
 /E57_drug_discovery/E57_targetmol_data.csv
 /E57_drug_discovery/E57_LOPAC_data.csv
+/E57_drug_discovery/E57_targetmol_full_data.csv
+/E57_drug_discovery/E57_senscore_targetmol.csv

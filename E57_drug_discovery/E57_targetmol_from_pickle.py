@@ -64,6 +64,9 @@ drug_data_scaled = StandardScaler().fit_transform(drug_data_reduced)
 drug_pred = clf_svm_2.predict(drug_data_scaled)
 drug_pred_probs = clf_svm_2.decision_function(drug_data_scaled)
 
+del drug_data_scaled
+del drug_data_reduced
+
 # we produce a senescence score for each cell
 # want to scale that score by the minimum so that we have no negative values
 
@@ -87,9 +90,9 @@ tot_sen = grouped_dat.sum()["sen_prediction"]
 
 index_sen_score = grouped_dat.mean().index
 
-px.scatter(y=drug_pred_probs, x=np.arange(len(drug_pred_probs)))
+#px.scatter(y=drug_pred_probs, x=np.arange(len(drug_pred_probs)))
 
-px.scatter(y=mean_sen_score, error_y=std_sen_score, x=list([x[0] + "_" + x[1] for x in index_sen_score]))
+#px.scatter(y=mean_sen_score, error_y=std_sen_score, x=list([x[0] + "_" + x[1] for x in index_sen_score]))
 
 # find the number of cells in each well
 
