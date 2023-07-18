@@ -1,10 +1,8 @@
 import numpy as np
 import plotly.express as px
 from skspatial.objects import Line, Point
-from skspatial.plotting import plot_2d
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.decomposition import PCA
-from sklearn.metrics import roc_auc_score
 from numpy.linalg import eig
 
 def data_processing_Nuclei(data_nucleiobject):
