@@ -8,7 +8,9 @@ Machine learning to detect senescent glioblastoma cells and to find compounds wh
 * functions.py:
   - functions called by other files, this should be commented well enough that the functions are self-explanatory.
 * find_interesting_compounds.ipynb
-  - Take all the processed data and find compounds that induce senescence in both cell types. 
+  - Take all the processed data and find compounds that induce senescence in both cell types.
+* run_post_SVM_training.sh
+  - Runs all steps after the SVM training, just run this script, then visualise with the *datavis.ipynb* notebooks and run *find_interesting_compounds.ipynb* to find interesting compounds.
 
 ### E31_LaminB1_P21_data:
   * E31_050423_P21_LaminB1DilatedNuclei_1.csv.zip
