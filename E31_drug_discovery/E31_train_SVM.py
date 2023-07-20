@@ -2,10 +2,7 @@ import sys
 sys.path.append("..")
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-import plotly.express as px
-import plotly.graph_objects as go
 import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 from sklearn import svm
 from sklearn import metrics
@@ -33,38 +30,8 @@ data = pd.concat([E_31_NucleiObject, E_31_DilatedNuclei], axis=1)
 
 E_31_image = pd.read_csv("../E31_LaminB1_P21_data/E31_050423_P21_LaminB1Image.csv")
 
-fig = px.histogram(data, x='Intensity_MeanIntensity_CorrP21', color='ImageNumber', nbins=2000)
-fig.update_layout(
-    font=dict(
-        size=16,
-    )
-)
-fig.update_layout(
-    title="P21 in each cell before normalisation",
-    xaxis_title="Mean P21 intensity",
-    yaxis_title="Count",
-    barmode='overlay')
-fig.update_traces(opacity=0.75)
-
-fig.show()
-
 # subtract background from each image
 data = rescale_from_background(data, E_31_image)
-
-fig = px.histogram(data, x='Intensity_MeanIntensity_CorrP21', color='ImageNumber', nbins=1000)
-fig.update_layout(
-    font=dict(
-        size=16,
-    )
-)
-fig.update_layout(
-    title="P21 in each cell after normalisation",
-    xaxis_title="Mean P21 intensity",
-    yaxis_title="Count",
-    barmode='overlay')
-fig.update_traces(opacity=0.75)
-
-fig.show()
 
 # check columns
 # data.columns[0:100]
@@ -116,36 +83,11 @@ print(sum(data['Not Senescent']))
 # data = project_onto_line(data, 'RadialDistribution_MeanFrac_CorrLaminB1_max', 'Intensity_MeanIntensity_CorrP21', projection_line)
 data = project_onto_line_pca(data, 'Intensity_MeanIntensity_CorrLaminB1', 'Intensity_MeanIntensity_CorrP21')
 
-## Create data_for_umap
-
-data_for_umap = data.dropna(axis='columns')
-data_for_umap = data_for_umap.drop(
-    ['Metadata_CellLine', 'ImageNumber', 'ObjectNumber', 'Metadata_Radiated', 'Number_Object_Number', 'Senescent',
-     'Not Senescent', 'x_proj', 'y_proj'], axis=1)
-
-## Include option to remove granularity
-
-# to_drop = []
-# for column in data_for_umap.columns:
-#     split_cols = column.split('_')
-#     if split_cols[0] == 'Granularity':
-#         to_drop.append(column)
-# data_for_umap = data_for_umap.drop(to_drop, axis = 1)
-
-## Put a threshold in the data to remove features with low variance
-
-filter_threshold = 0.2
-data_for_umap_filtered, filtered_columns = variance_threshold(data_for_umap, filter_threshold)
-
 # Drop column with nan as all of the entries
 data_for_pca = data.dropna(axis='columns')
 # replace an infinities with nan, then drop cells with nan
 data_for_pca.replace([np.inf, -np.inf], np.nan, inplace=True)
 data_for_pca = data_for_pca.dropna()
-# drop metedata
-data_for_pca_coldrop = data_for_pca.drop(
-    ['Metadata_CellLine', 'ImageNumber', 'ObjectNumber', 'Metadata_Radiated', 'Number_Object_Number', 'Senescent',
-     'x_proj', 'y_proj'], axis=1)
 
 ####################################################################
 # Machine learning
@@ -221,38 +163,6 @@ print(x_train_full.shape)
 
 ## SVM
 
-# selesct "balanced" option as have far fewer positively identified senescenet cells
-clf_svm = svm.SVC(kernel='rbf', class_weight='balanced')
-
-clf_svm.fit(x_train, y_train)
-
-y_pred_svm = clf_svm.predict(x_test)
-
-print("Accuracy:", metrics.accuracy_score(y_test, y_pred_svm))
-# Model Precision:
-# What proportion of positive identifications were actually correct?
-print("Precision:", metrics.precision_score(y_test, y_pred_svm))
-# Model Recall:
-# What proportion of actual positives were identified correctly?
-print("Recall:", metrics.recall_score(y_test, y_pred_svm))
-
-pred_probs_svm = clf_svm.decision_function(x_test)
-results_df = pd.DataFrame([pred_probs_svm, y_test]).T
-results_df = results_df.sort_values(by=[0])
-
-px.histogram(x=pred_probs_svm)
-
-plot_ordered_classifier_score(results_df, "E31", "SVM")
-
-x_test_plot = x_test.copy()
-
-tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
-tsne_results_test = tsne.fit_transform(x_test_plot)
-
-plot_projection("E31 TSNE on PCA coloured by SVM classifier score ", tsne_results_test, pred_probs_svm)
-
-plot_projection("E31 TSNE on PCA coloured by p21 senescence classification ", tsne_results_test, y_test)
-
 ## Test and train on sensesent and non-sen
 
 # filter data for cells with only a score in either senescence or no senescence columns
@@ -281,19 +191,18 @@ clf_svm_2.fit(x_train_2, y_train_2)
 y_pred_svm_2 = clf_svm_2.predict(x_test_2)
 pred_probs_svm_2 = clf_svm_2.decision_function(x_test_2)
 
+print("Train on very senescent and very non-senescent, test on the same")
 print("Accuracy:", metrics.accuracy_score(y_test_2, y_pred_svm_2))
 print("Precision:", metrics.precision_score(y_test_2, y_pred_svm_2))
 print("Recall:", metrics.recall_score(y_test_2, y_pred_svm_2))
 
 # train on the 2 subtypes, test on all
+print("Train on very senescent and very non-senescent, test on all")
 y_pred_svm_3 = clf_svm_2.predict(x_test)
 pred_probs_svm_3 = clf_svm_2.decision_function(x_test)
 print("Accuracy:", metrics.accuracy_score(y_test, y_pred_svm_3))
 print("Precision:", metrics.precision_score(y_test, y_pred_svm_3))
 print("Recall:", metrics.recall_score(y_test, y_pred_svm_3))
-
-fpr, tpr, thresholds = roc_curve(y_test, pred_probs_svm)
-roc_auc = auc(fpr, tpr)
 
 fpr_2, tpr_2, thresholds_2 = roc_curve(y_test_2, pred_probs_svm_2)
 roc_auc_2 = auc(fpr_2, tpr_2)
@@ -301,51 +210,11 @@ roc_auc_2 = auc(fpr_2, tpr_2)
 fpr_3, tpr_3, thresholds_3 = roc_curve(y_test, pred_probs_svm_3)
 roc_auc_3 = auc(fpr_3, tpr_3)
 
-display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name='example estimator')
 display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2, estimator_name='example estimator')
 display_3 = RocCurveDisplay(fpr=fpr_3, tpr=tpr_3, roc_auc=roc_auc_3, estimator_name='example estimator')
-display.plot()
 display_2.plot()
 display_3.plot()
 plt.show()
-
-## Vary test and train split
-
-frac_test_array = np.arange(0.05, 1.0, 0.01)
-frac_acc = []
-frac_prec = []
-frac_rec = []
-
-for frac in frac_test_array:
-    x_train_vary, x_test_vary, y_train_vary, y_test_vary = train_test_split(x_2_catagories, y_2, test_size=frac)
-    # train on the 2 subtypes, test on the two subtypes
-    x_train_vary = StandardScaler().fit_transform(x_train_vary)
-    x_test_vary = StandardScaler().fit_transform(x_test_vary)
-    clf_svm_vary = svm.SVC(kernel='rbf')
-    clf_svm_vary.fit(x_train_vary, y_train_vary)
-    y_pred_vary = clf_svm_vary.predict(x_test_vary)
-    pred_probs_vary = clf_svm_vary.decision_function(x_test_vary)
-    frac_acc.append(metrics.accuracy_score(y_test_vary, y_pred_vary))
-    frac_prec.append(metrics.precision_score(y_test_vary, y_pred_vary))
-    frac_rec.append(metrics.recall_score(y_test_vary, y_pred_vary))
-
-frac_to_plot = pd.DataFrame(np.array([frac_test_array, frac_acc, frac_prec, frac_rec]).T,
-                            columns=["frac to test", "accuracy", "precision", "recall"])
-
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=frac_to_plot["frac to test"], y=frac_to_plot["accuracy"], mode="markers", name="Accuracy"))
-fig.add_trace(go.Scatter(x=frac_to_plot["frac to test"], y=frac_to_plot["precision"], mode="markers", name="Precision"))
-fig.add_trace(go.Scatter(x=frac_to_plot["frac to test"], y=frac_to_plot["recall"], mode="markers", name="Recall"))
-fig.update_layout(
-    font=dict(
-        size=22,
-    )
-)
-fig.update_layout(
-    title="E31 test train split",
-    xaxis_title="Fraction of cells tested on",
-    yaxis_title="Metric")
-
 
 ## pickle
 
