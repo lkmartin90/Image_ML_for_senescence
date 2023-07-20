@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("..")
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -16,7 +17,7 @@ import pickle
 # start by processing our E31 data and using it to train the machine learning model
 ################################################################
 
-##  Read in data and pre-process
+#  Read in data and pre-process
 
 E_57_control_NucleiObject = pd.read_csv("../E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1NucleiObject.csv")
 E_57_radiated_NucleiObject = pd.read_csv("../E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1NucleiObject.csv")
@@ -35,16 +36,20 @@ radiated_data = pd.concat([E_57_radiated_NucleiObject, E_57_radiated_DilatedNucl
 control_data['Metadata_Radiated'] = "control"
 radiated_data['Metadata_Radiated'] = "radiated"
 
-control_data["CELL_ID"] = control_data['Metadata_CellLine'].astype(str) +"_"+ control_data['ImageNumber'].astype(str) +"_"+  control_data['ObjectNumber'].astype(str) +"_"+  control_data['Metadata_Radiated'].astype(str)
-radiated_data["CELL_ID"] = radiated_data['Metadata_CellLine'].astype(str) +"_"+ radiated_data['ImageNumber'].astype(str) +"_"+  radiated_data['ObjectNumber'].astype(str) +"_"+  radiated_data['Metadata_Radiated'].astype(str)
+control_data["CELL_ID"] = control_data['Metadata_CellLine'].astype(str) + "_" + \
+                          control_data['ImageNumber'].astype(str) + "_" + control_data['ObjectNumber'].astype(str) \
+                          + "_" + control_data['Metadata_Radiated'].astype(str)
+radiated_data["CELL_ID"] = radiated_data['Metadata_CellLine'].astype(str) + "_" + \
+                           radiated_data['ImageNumber'].astype(str) + "_" + radiated_data['ObjectNumber'].astype(str) \
+                           + "_" + radiated_data['Metadata_Radiated'].astype(str)
 control_data = control_data.set_index("CELL_ID")
 radiated_data = radiated_data.set_index("CELL_ID")
 
 # create one data object containing all the data
 data = pd.concat([control_data, radiated_data])
-data['Rad_number'] = data['Metadata_Radiated'].astype(str) +"_"+ data['ImageNumber'].astype(str)
+data['Rad_number'] = data['Metadata_Radiated'].astype(str) + "_" + data['ImageNumber'].astype(str)
 
-## Rescale intensity measures based on background levels
+# Rescale intensity measures based on background levels
 
 E_57_image_control = pd.read_csv("../E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1Image.csv")
 E_57_image_radiated = pd.read_csv("../E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1Image.csv")
@@ -55,41 +60,41 @@ data = rescale_from_background_E55(data, E_57_image_control, E_57_image_radiated
 # check columns
 # data.columns[0:100]
 
-## Remove columns that are entirely NaN
+# Remove columns that are entirely NaN
 
 data = data.dropna(axis='columns')
 
-## Remove cells that are an outlier in many catagories
+# Remove cells that are an outlier in many catagories
 
 data = find_outliers_E55(data, 70)
 
-## Filter based on cell size
+# Filter based on cell size
 
 data = data[data['AreaShape_Area'] > 150]
 
-## Filter based on Std dev
+# Filter based on Std dev
 
 data = data[data['Intensity_StdIntensity_CorrNuclei'] > 0.001]
 
-## Create new features
+# Create new features
 
 data = create_new_features(data)
 
-## Use this to add a column labelling those with low LaminB1 and high P21 as senescent
+# Use this to add a column labelling those with low LaminB1 and high P21 as senescent
 
 Lam_cutoff = 0.0042
 P21_cutoff = 0.0022
 
 data['Senescent'] = 0
 data.loc[(data.Intensity_MeanIntensity_CorrLaminB1 < Lam_cutoff) & (
-            data.Intensity_MeanIntensity_CorrP21 > P21_cutoff), 'Senescent'] = 1
+        data.Intensity_MeanIntensity_CorrP21 > P21_cutoff), 'Senescent'] = 1
 
 Lam_cutoff_1 = 0.005
 P21_cutoff_1 = 0.0019
 
 data['Not Senescent'] = 0
 data.loc[(data.Intensity_MeanIntensity_CorrLaminB1 > Lam_cutoff_1) & (
-            data.Intensity_MeanIntensity_CorrP21 < P21_cutoff_1), 'Not Senescent'] = 1
+        data.Intensity_MeanIntensity_CorrP21 < P21_cutoff_1), 'Not Senescent'] = 1
 
 print('Number of cells defined as senescent:')
 print(sum(data['Senescent']))
@@ -97,9 +102,8 @@ print(sum(data['Senescent']))
 print('Number of cells defined as not senescent:')
 print(sum(data['Not Senescent']))
 
-## Project onto senescence axis
+# Project onto senescence axis
 
-# data = project_onto_line(data, 'RadialDistribution_MeanFrac_CorrLaminB1_max', 'Intensity_MeanIntensity_CorrP21', projection_line)
 data = project_onto_line_pca(data, 'Intensity_MeanIntensity_CorrLaminB1', 'Intensity_MeanIntensity_CorrP21')
 
 # Drop column with nan as all of the entries
@@ -112,7 +116,7 @@ data_for_pca = data_for_pca.dropna()
 # Machine learning
 ####################################################################
 
-## Split data into test and train
+# Split data into test and train
 
 y = data_for_pca["Senescent"]
 
@@ -165,7 +169,6 @@ fraction_to_test = 0.5
 
 x_train_full, x_test_full, y_train, y_test = train_test_split(x, y, test_size=fraction_to_test)
 
-
 x_train = x_train_full.copy().drop(['x_proj', 'y_proj'], axis=1)
 x_test = x_test_full.copy().drop(['x_proj', 'y_proj'], axis=1)
 
@@ -180,8 +183,8 @@ print(x_train.shape)
 print("Shape of testing data")
 print(x_train_full.shape)
 
-## SVM
-## Test and train on sensesent and non-sen
+# SVM
+# Test and train on sensesent and non-sen
 
 # filter data for cells with only a score in either senescence or no senescence columns
 x_2_catagories = data_for_pca.copy()
@@ -228,13 +231,15 @@ roc_auc_2 = auc(fpr_2, tpr_2)
 fpr_3, tpr_3, thresholds_3 = roc_curve(y_test, pred_probs_svm_3)
 roc_auc_3 = auc(fpr_3, tpr_3)
 
-display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2, estimator_name='example estimator')
-display_3 = RocCurveDisplay(fpr=fpr_3, tpr=tpr_3, roc_auc=roc_auc_3, estimator_name='example estimator')
+display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2,
+                            estimator_name='Train on very senescent and very non-senescent cells, test on the same')
+display_3 = RocCurveDisplay(fpr=fpr_3, tpr=tpr_3, roc_auc=roc_auc_3,
+                            estimator_name='Train on very senescent and very non-senescent cells, test on all')
 display_2.plot()
 display_3.plot()
 plt.show()
 
-## pickle
+# pickle
 
 filename = 'E57_SVM_model.sav'
 pickle.dump(clf_svm_2, open(filename, 'wb'))

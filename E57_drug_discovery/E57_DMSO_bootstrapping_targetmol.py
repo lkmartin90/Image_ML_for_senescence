@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("..")
 import pandas as pd
 from functions import *
@@ -19,9 +20,10 @@ all_data = pd.read_csv("E57_senscore_targetmol.csv")
 
 all_data["ID"] = all_data["Metadata_platename"] + "_" + all_data["Metadata_well"]
 
-all_data["fraction_sen"] = all_data["number_sen"]/ all_data["cell_no"]
+all_data["fraction_sen"] = all_data["number_sen"] / all_data["cell_no"]
 
-all_data["conc"] = all_data["Metadata_platename"].map({'E57-TM-0-01': 0.01, 'E57-TM-0-1': 0.1, 'E57-TM-1-0': 1, 'E57-TM-10': 10})
+all_data["conc"] = all_data["Metadata_platename"].map(
+    {'E57-TM-0-01': 0.01, 'E57-TM-0-1': 0.1, 'E57-TM-1-0': 1, 'E57-TM-10': 10})
 
 all_data["row"] = all_data["Metadata_well"].str[:1]
 
@@ -55,9 +57,10 @@ for plate in set(DMSO_data["Metadata_platename"]):
             print(well)
             if well != "01" and well != "02":
 
-                num_cells_for_bootstrap = len(drug_data_tot[(drug_data_tot["Metadata_platename"] == plate) & (drug_data_tot["row"] == row) & (drug_data_tot["well_ending"] == well)])
-                #print(drug_data_tot[(drug_data_tot["Metadata_platename"] == plate) & (drug_data_tot["row"] == row) & (drug_data_tot["well_ending"] == well)])
-                #break
+                num_cells_for_bootstrap = len(drug_data_tot[(drug_data_tot["Metadata_platename"] == plate) & (
+                            drug_data_tot["row"] == row) & (drug_data_tot["well_ending"] == well)])
+                # print(drug_data_tot[(drug_data_tot["Metadata_platename"] == plate) & (drug_data_tot["row"] == row) & (drug_data_tot["well_ending"] == well)])
+                # break
 
                 # create empty arrays to store the summary data
                 subset_mean_senscore = []
@@ -71,7 +74,7 @@ for plate in set(DMSO_data["Metadata_platename"]):
                     # chose random subset so cells, want this to be WITH replacement
                     chosen_cells = choices(DMSO_on_plate.index, k=num_cells_for_bootstrap)
                     chosen_cell_data = DMSO_on_plate.loc[chosen_cells]
-                    #print(len(chosen_cell_data))
+                    # print(len(chosen_cell_data))
 
                     # find, mean, standard deviation, and number of senescent cells per well
                     mean_sen_score = np.mean(list(chosen_cell_data["sen_score"]))
@@ -84,12 +87,12 @@ for plate in set(DMSO_data["Metadata_platename"]):
                     subset_num_sencells.append(tot_sen)
                     subset_std_senscore.append(std_sen_score)
 
-
                 # create df of data from this well
-                subset_df = pd.DataFrame([subset_mean_senscore, subset_num_sencells, subset_std_senscore, subset_num_cells])
+                subset_df = pd.DataFrame(
+                    [subset_mean_senscore, subset_num_sencells, subset_std_senscore, subset_num_cells])
                 subset_df = subset_df.T
-                subset_df = subset_df.rename({0: 'mean_senscore', 1: 'num_sencells', 2: 'std_senscore', 3: 'num_cells'}, axis=1)
-
+                subset_df = subset_df.rename({0: 'mean_senscore', 1: 'num_sencells', 2: 'std_senscore', 3: 'num_cells'},
+                                             axis=1)
 
                 subset_df["ID"] = plate + "_" + row + well
                 all_dfs.append(subset_df)
@@ -100,7 +103,7 @@ bootstrapped_data = pd.concat(all_dfs)
 print(bootstrapped_data.groupby("ID").std())
 
 std_senscore_from_bootstrapping = bootstrapped_data.groupby("ID").std()["mean_senscore"]
-std_numsen_from_bootstrapping =  bootstrapped_data.groupby("ID").std()["num_sencells"]
+std_numsen_from_bootstrapping = bootstrapped_data.groupby("ID").std()["num_sencells"]
 all_data = all_data.set_index("ID")
 all_data["boostrapped_senscore_mean_std"] = std_senscore_from_bootstrapping
 all_data["boostrapped_numcells_mean_std"] = std_numsen_from_bootstrapping

@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("..")
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -9,7 +10,7 @@ import pickle
 #################################################################################################
 # load the data and the model
 drug_data_tot = pd.read_csv("E57_targetmol_data.csv", index_col=False)
-drug_data_tot = drug_data_tot.drop("Unnamed: 0", axis = 1)
+drug_data_tot = drug_data_tot.drop("Unnamed: 0", axis=1)
 
 clf_svm_2 = pickle.load(open('E57_SVM_model.sav', 'rb'))
 
@@ -28,9 +29,11 @@ plate_and_row_names = list(DMSO_grouped_means.index)
 print(plate_and_row_names)
 print(DMSO_grouped_means)
 
-test_well = drug_data_tot[(drug_data_tot["Metadata_platename"] == "E57-TM-10") & (drug_data_tot["Metadata_well"] == "B11")]["Intensity_MaxIntensity_W1"]
-test_well_corrected = (test_well.copy()/DMSO_grouped_means.loc[('E57-TM-10', 'B')]["Intensity_MaxIntensity_W1"]) * DMSO_grouped_means.loc[plate_and_row_names[0]]["Intensity_MaxIntensity_W1"]
-
+test_well = \
+drug_data_tot[(drug_data_tot["Metadata_platename"] == "E57-TM-10") & (drug_data_tot["Metadata_well"] == "B11")][
+    "Intensity_MaxIntensity_W1"]
+test_well_corrected = (test_well.copy() / DMSO_grouped_means.loc[('E57-TM-10', 'B')]["Intensity_MaxIntensity_W1"]) * \
+                      DMSO_grouped_means.loc[plate_and_row_names[0]]["Intensity_MaxIntensity_W1"]
 
 # want to divide by the mean DMSO intensity for that plate, and multiply by the mean DMSO intensity for plate 1
 for measure in drug_data_tot.columns:
@@ -41,18 +44,24 @@ for measure in drug_data_tot.columns:
         if split_measure[1][0] != 'S' and split_measure[1] != 'MassDisplacement':
             for plate_and_row in plate_and_row_names:
                 plate, row = plate_and_row
-                drug_data_tot.loc[(drug_data_tot['Metadata_platename'] == plate) & (drug_data_tot['row'] == row), measure] = \
-                    (drug_data_tot.loc[(drug_data_tot['Metadata_platename'] == plate) & (drug_data_tot['row'] == row), measure].copy() \
-                    / DMSO_grouped_means.loc[plate_and_row, measure]) * DMSO_grouped_means.loc[plate_and_row_names[0], measure]
+                drug_data_tot.loc[
+                    (drug_data_tot['Metadata_platename'] == plate) & (drug_data_tot['row'] == row), measure] = \
+                    (drug_data_tot.loc[
+                         (drug_data_tot['Metadata_platename'] == plate) & (drug_data_tot['row'] == row), measure].copy() \
+                     / DMSO_grouped_means.loc[plate_and_row, measure]) * DMSO_grouped_means.loc[
+                        plate_and_row_names[0], measure]
 
-test_well_after = drug_data_tot[(drug_data_tot["Metadata_platename"] == "E31-TM-10") & (drug_data_tot["Metadata_well"] == "B11")]["Intensity_MaxIntensity_W1"]
+test_well_after = \
+drug_data_tot[(drug_data_tot["Metadata_platename"] == "E31-TM-10") & (drug_data_tot["Metadata_well"] == "B11")][
+    "Intensity_MaxIntensity_W1"]
 print("normalisation test")
 print(test_well_corrected)
 print(test_well_after)
 
 # drop columns not needed for ML
 
-drug_data_reduced = drug_data_tot.drop(["Metadata_platename", "Metadata_well", "ImageNumber", "ObjectNumber", "row"], axis=1)
+drug_data_reduced = drug_data_tot.drop(["Metadata_platename", "Metadata_well", "ImageNumber", "ObjectNumber", "row"],
+                                       axis=1)
 
 # scale data
 # Implicit assumption here that we have the same proportion os senescent cells as in the training data? YES
@@ -92,14 +101,15 @@ tot_sen = grouped_dat.sum()["sen_prediction"]
 
 index_sen_score = grouped_dat.mean().index
 
-#px.scatter(y=drug_pred_probs, x=np.arange(len(drug_pred_probs)))
+# px.scatter(y=drug_pred_probs, x=np.arange(len(drug_pred_probs)))
 
-#px.scatter(y=mean_sen_score, error_y=std_sen_score, x=list([x[0] + "_" + x[1] for x in index_sen_score]))
+# px.scatter(y=mean_sen_score, error_y=std_sen_score, x=list([x[0] + "_" + x[1] for x in index_sen_score]))
 
 # find the number of cells in each well
 
 cell_no = pd.DataFrame(
-    drug_data_tot.groupby(["Metadata_platename", "Metadata_well", "ImageNumber"]).max()["ObjectNumber"].groupby(["Metadata_platename", "Metadata_well"]).sum())
+    drug_data_tot.groupby(["Metadata_platename", "Metadata_well", "ImageNumber"]).max()["ObjectNumber"].groupby(
+        ["Metadata_platename", "Metadata_well"]).sum())
 
 # create summary data for each well and save to file
 

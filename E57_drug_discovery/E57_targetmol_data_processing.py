@@ -51,7 +51,7 @@ for file in glob.glob("/mnt/CELL_PAINTING_DATA/GCGR_TargetMolAntiCancer/raw_data
 
         # append to list of dfs
         drug_data_list.append(drug_data)
-        count = count +1
+        count = count + 1
 
 drug_data_tot = pd.concat(drug_data_list)
 

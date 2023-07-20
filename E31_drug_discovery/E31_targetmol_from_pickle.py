@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import pickle
 
 ################################################################################################
-## Test on drug discovery data
+# Test on drug discovery data
 #################################################################################################
 # load the data and the model
 drug_data_tot = pd.read_csv("E31_targetmol_data.csv", index_col=False)
@@ -30,8 +30,10 @@ print(DMSO_grouped_means)
 
 # also want to test to see normalisation is actually working, test for one row what we expect before and after
 
-test_well = drug_data_tot[(drug_data_tot["Metadata_platename"] == "E31-TM-10") & (drug_data_tot["Metadata_well"] == "B11")]["Intensity_MaxIntensity_W1"]
-test_well_corrected = (test_well.copy()/DMSO_grouped_means.loc[('E31-TM-10', 'B')]["Intensity_MaxIntensity_W1"]) * DMSO_grouped_means.loc[plate_and_row_names[0]]["Intensity_MaxIntensity_W1"]
+#test_well = drug_data_tot[(drug_data_tot["Metadata_platename"] == "E31-TM-10") &
+#                          (drug_data_tot["Metadata_well"] == "B11")]["Intensity_MaxIntensity_W1"]
+#test_well_corrected = (test_well.copy()/DMSO_grouped_means.loc[('E31-TM-10', 'B')]["Intensity_MaxIntensity_W1"]) \
+#                      * DMSO_grouped_means.loc[plate_and_row_names[0]]["Intensity_MaxIntensity_W1"]
 
 # want to divide by the mean DMSO intensity for that row, and multiply by the mean DMSO intensity for plate 1
 for measure in drug_data_tot.columns:
@@ -46,10 +48,11 @@ for measure in drug_data_tot.columns:
                     (drug_data_tot.loc[(drug_data_tot['Metadata_platename'] == plate) & (drug_data_tot['row'] == row), measure].copy() \
                     / DMSO_grouped_means.loc[plate_and_row, measure]) * DMSO_grouped_means.loc[plate_and_row_names[0], measure]
 
-test_well_after = drug_data_tot[(drug_data_tot["Metadata_platename"] == "E31-TM-10") & (drug_data_tot["Metadata_well"] == "B11")]["Intensity_MaxIntensity_W1"]
-print("normalisation test")
-print(test_well_corrected)
-print(test_well_after)
+#test_well_after = drug_data_tot[(drug_data_tot["Metadata_platename"] == "E31-TM-10") &
+#                                (drug_data_tot["Metadata_well"] == "B11")]["Intensity_MaxIntensity_W1"]
+#print("normalisation test")
+#print(test_well_corrected)
+#print(test_well_after)
 
 # drop columns not needed for ML
 

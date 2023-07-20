@@ -16,7 +16,7 @@ import pickle
 # start by processing our E31 data and using it to train the machine learning model
 ################################################################
 
-##  Read in data and pre-process
+#  Read in data and pre-process
 
 E_31_NucleiObject = pd.read_csv("../E31_LaminB1_P21_data/E31_050423_P21_LaminB1NucleiObject.csv")
 E_31_NucleiObject = data_processing_Nuclei(E_31_NucleiObject)
@@ -26,7 +26,7 @@ E_31_DilatedNuclei = data_processing_Dilated(E_31_DilatedNuclei)
 # create one data object containing all the data
 data = pd.concat([E_31_NucleiObject, E_31_DilatedNuclei], axis=1)
 
-## Rescale intensity measures based on background levels
+# Rescale intensity measures based on background levels
 
 E_31_image = pd.read_csv("../E31_LaminB1_P21_data/E31_050423_P21_LaminB1Image.csv")
 
@@ -36,27 +36,27 @@ data = rescale_from_background(data, E_31_image)
 # check columns
 # data.columns[0:100]
 
-## Remove columns that are entirely NaN
+# Remove columns that are entirely NaN
 
 data = data.dropna(axis='columns')
 
-## Remove cells that are an outlier in many catagories
+# Remove cells that are an outlier in many catagories
 
 data = find_outliers(data, 70)
 
-## Filter based on cell size
+# Filter based on cell size
 
 data = data[data['AreaShape_Area'] > 180]
 
-## Filter based on Std dev
+# Filter based on Std dev
 
 data = data[data['Intensity_StdIntensity_CorrNuclei'] > 0.001]
 
-## Create new features
+# Create new features
 
 data = create_new_features(data)
 
-## Use this to add a column labelling those with low LaminB1 and high P21 as senescent
+# Use this to add a column labelling those with low LaminB1 and high P21 as senescent
 
 Lam_cutoff = 0.006
 P21_cutoff = 0.0115
@@ -78,9 +78,8 @@ print(sum(data['Senescent']))
 print('Number of cells defined as not senescent:')
 print(sum(data['Not Senescent']))
 
-## Project onto senescence axis
+# Project onto senescence axis
 
-# data = project_onto_line(data, 'RadialDistribution_MeanFrac_CorrLaminB1_max', 'Intensity_MeanIntensity_CorrP21', projection_line)
 data = project_onto_line_pca(data, 'Intensity_MeanIntensity_CorrLaminB1', 'Intensity_MeanIntensity_CorrP21')
 
 # Drop column with nan as all of the entries
@@ -93,7 +92,7 @@ data_for_pca = data_for_pca.dropna()
 # Machine learning
 ####################################################################
 
-## Split data into test and train
+# Split data into test and train
 
 y = data_for_pca["Senescent"]
 
@@ -161,9 +160,8 @@ print(x_train.shape)
 print("Shape of testing data")
 print(x_train_full.shape)
 
-## SVM
-
-## Test and train on sensesent and non-sen
+# SVM
+# Test and train on sensesent and non-sen
 
 # filter data for cells with only a score in either senescence or no senescence columns
 x_2_catagories = data_for_pca.copy()
@@ -216,7 +214,7 @@ display_2.plot()
 display_3.plot()
 plt.show()
 
-## pickle
+# pickle
 
 filename = 'E31_SVM_model.sav'
 pickle.dump(clf_svm_2, open(filename, 'wb'))
