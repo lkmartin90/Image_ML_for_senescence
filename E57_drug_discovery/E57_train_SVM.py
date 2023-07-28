@@ -123,7 +123,7 @@ y = data_for_pca["Senescent"]
 # remove everything not DAPI related
 x = data_for_pca.copy()
 x = x.drop(
-    ['Metadata_CellLine', 'ImageNumber', 'ObjectNumber', 'Metadata_Radiated', 'Number_Object_Number', 'Senescent',
+    ['Metadata_CellLine', 'ImageNumber', 'ObjectNumber', 'Number_Object_Number', 'Senescent',
      'Not Senescent'], axis=1)
 
 features_to_keep_template = ["AreaShape_Area", "AreaShape_Compactness", "AreaShape_Eccentricity",
@@ -138,8 +138,7 @@ features_to_keep_template = ["AreaShape_Area", "AreaShape_Compactness", "AreaSha
                              "Intensity_MaxIntensity", "Intensity_MeanIntensityEdge", "Intensity_MeanIntensity",
                              "Intensity_MedianIntensity",
                              "Intensity_MinIntensityEdge", "Intensity_MinIntensity", "Intensity_StdIntensityEdge",
-                             "Intensity_StdIntensity", "Intensity_UpperQuartileIntensity", "cell_line", "x_proj",
-                             "y_proj"]
+                             "Intensity_StdIntensity", "Intensity_UpperQuartileIntensity", "cell_line", "Metadata_Radiated"]
 
 # keep only features that we have drug discovery data for
 
@@ -167,15 +166,23 @@ print(x.shape)
 
 fraction_to_test = 0.5
 
+# split into test and train
 x_train_full, x_test_full, y_train, y_test = train_test_split(x, y, test_size=fraction_to_test)
 
-x_train = x_train_full.copy().drop(['x_proj', 'y_proj'], axis=1)
-x_test = x_test_full.copy().drop(['x_proj', 'y_proj'], axis=1)
+# train 2 scalers based only on the control data in the test and train sets
 
-# scale
+train_scaler = StandardScaler().fit(x_train_full[x_train_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
 
-x_test = StandardScaler().fit_transform(x_test)
-x_train = StandardScaler().fit_transform(x_train)
+test_scaler = StandardScaler().fit(x_test_full[x_test_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
+
+# drop metadata
+
+x_train = x_train_full.copy().drop(['Metadata_Radiated'], axis=1)
+x_test = x_test_full.copy().drop(['Metadata_Radiated'], axis=1)
+
+#scale
+x_test = test_scaler.transform(x_test)
+x_train = train_scaler.transform(x_train)
 
 print("Shape of training data")
 print(x_train.shape)
@@ -193,7 +200,7 @@ y_2 = x_2_catagories["Senescent"]
 
 x_2_catagories = x_2_catagories[features_to_keep]
 
-to_drop = ["x_proj", "y_proj"]
+to_drop = []
 for column in x_2_catagories.columns:
     split_cols = column.split('_')
     if len(split_cols) > 2:
@@ -201,10 +208,22 @@ for column in x_2_catagories.columns:
             to_drop.append(column)
 x_2_catagories = x_2_catagories.drop(to_drop, axis=1)
 
-x_train_2, x_test_2, y_train_2, y_test_2 = train_test_split(x_2_catagories, y_2, test_size=fraction_to_test)
+# split into test and train
+x_train_2_full, x_test_2_full, y_train_2, y_test_2 = train_test_split(x_2_catagories, y_2, test_size=fraction_to_test)
 
-x_train_2 = StandardScaler().fit_transform(x_train_2)
-x_test_2 = StandardScaler().fit_transform(x_test_2)
+# train scaler based on control
+train_scaler_2 = StandardScaler().fit(x_train_2_full[x_train_2_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
+
+test_scaler_2 = StandardScaler().fit(x_test_2_full[x_test_2_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
+
+# drop metadata
+
+x_train_2 = x_train_2_full.copy().drop(['Metadata_Radiated'], axis=1)
+x_test_2 = x_test_2_full.copy().drop(['Metadata_Radiated'], axis=1)
+
+#scale
+x_test_2 = test_scaler_2.transform(x_test_2)
+x_train_2 = train_scaler_2.transform(x_train_2)
 
 # train on the 2 subtypes, test on the two subtypes
 clf_svm_2 = svm.SVC(kernel='rbf')

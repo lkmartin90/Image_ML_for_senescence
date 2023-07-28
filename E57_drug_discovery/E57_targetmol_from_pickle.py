@@ -29,63 +29,42 @@ plate_and_row_names = list(DMSO_grouped_means.index)
 print(plate_and_row_names)
 print(DMSO_grouped_means)
 
-test_well = \
-drug_data_tot[(drug_data_tot["Metadata_platename"] == "E57-TM-10") & (drug_data_tot["Metadata_well"] == "B11")][
-    "Intensity_MaxIntensity_W1"]
-test_well_corrected = (test_well.copy() / DMSO_grouped_means.loc[('E57-TM-10', 'B')]["Intensity_MaxIntensity_W1"]) * \
-                      DMSO_grouped_means.loc[plate_and_row_names[0]]["Intensity_MaxIntensity_W1"]
-
-# want to divide by the mean DMSO intensity for that plate, and multiply by the mean DMSO intensity for plate 1
-for measure in drug_data_tot.columns:
-    # split the column names at each "_"
-    split_measure = measure.split('_')
-    if split_measure[0] == "Intensity":
-        # if the column is an intensity measure then want to scale by the above masked metrics.
-        if split_measure[1][0] != 'S' and split_measure[1] != 'MassDisplacement':
-            for plate_and_row in plate_and_row_names:
-                plate, row = plate_and_row
-                drug_data_tot.loc[
-                    (drug_data_tot['Metadata_platename'] == plate) & (drug_data_tot['row'] == row), measure] = \
-                    (drug_data_tot.loc[
-                         (drug_data_tot['Metadata_platename'] == plate) & (drug_data_tot['row'] == row), measure].copy() \
-                     / DMSO_grouped_means.loc[plate_and_row, measure]) * DMSO_grouped_means.loc[
-                        plate_and_row_names[0], measure]
-
-test_well_after = \
-drug_data_tot[(drug_data_tot["Metadata_platename"] == "E31-TM-10") & (drug_data_tot["Metadata_well"] == "B11")][
-    "Intensity_MaxIntensity_W1"]
-print("normalisation test")
-print(test_well_corrected)
-print(test_well_after)
-
 # drop columns not needed for ML
+# keep "well_ending" to identify DMSO
 
-drug_data_reduced = drug_data_tot.drop(["Metadata_platename", "Metadata_well", "ImageNumber", "ObjectNumber", "row"],
-                                       axis=1)
+drug_data_tot["well_ending"] = drug_data_tot["Metadata_well"].str[1:]
+drug_data_reduced = drug_data_tot.drop(["Metadata_well", "ImageNumber", "ObjectNumber", "row"], axis=1)
 
 # scale data
-# Implicit assumption here that we have the same proportion os senescent cells as in the training data? YES
-# Not sure that this is a problem if we use the relative senescence score?
+# We want to train a scaler based on the DMSO controls of each plate, then apply to all data on that plate
+# train scaler on the DMSO controls, then apply to all
 
-drug_data_scaled = StandardScaler().fit_transform(drug_data_reduced)
+# train scaler based on control
+scaled_list = []
+for plate in set(drug_data_reduced["Metadata_platename"]):
+    plate_data = drug_data_reduced.loc[drug_data_reduced["Metadata_platename"] == plate, :]
+    scaler = StandardScaler().fit(plate_data[(plate_data['well_ending'] == "01") | (plate_data['well_ending'] == "02")].drop(['well_ending', "Metadata_platename"], axis=1))
+    plate_data = plate_data.drop(['well_ending', "Metadata_platename"], axis=1)
+    plate_data_scaled = scaler.transform(plate_data)
+    plate_data_scaled = pd.DataFrame(plate_data_scaled, index=plate_data.index)
+    scaled_list.append(plate_data_scaled)
 
+
+drug_data_scaled = pd.concat(scaled_list)
 # apply the classifier to the drug discovery data
 drug_pred = clf_svm_2.predict(drug_data_scaled)
 drug_pred_probs = clf_svm_2.decision_function(drug_data_scaled)
 
-drug_data_tot = drug_data_tot.drop(drug_data_reduced.columns, axis=1)
+drug_data_tot = drug_data_tot[["Metadata_well", "ImageNumber", "ObjectNumber", "row", "well_ending", "Metadata_platename"]]
+
+# we produce a senescence score for each cell
+
+drug_data_tot["sen_score"] = pd.DataFrame(drug_pred_probs, index = drug_data_scaled.index)
+
+drug_data_tot["sen_prediction"] = pd.DataFrame(drug_pred, index = drug_data_scaled.index)
 
 del drug_data_scaled
 del drug_data_reduced
-
-# we produce a senescence score for each cell
-# want to scale that score by the minimum so that we have no negative values
-
-print("sen score of 0 mapped to ", min(drug_pred_probs))
-
-drug_data_tot["sen_score"] = drug_pred_probs + -1 * min(drug_pred_probs)
-
-drug_data_tot["sen_prediction"] = drug_pred
 
 drug_data_tot = drug_data_tot.dropna(axis=1)
 
