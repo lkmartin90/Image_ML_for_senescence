@@ -1,0 +1,493 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:5
+DateRevision:424
+GitHash:
+ModuleCount:33
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:["drag images into the box below. this pipeline is for Lucy's original image format and the files are very big so maximum 5/6 images can be run "]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    :
+    Filter images?:No filtering
+    Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "[\\\\/]\\.")
+
+Metadata:[module_num:2|svn_version:'Unknown'|variable_revision_number:6|show_window:False|notes:['this extracts metadata from two different sources', 'from the folder name it gets the cell line and radiated/nonradiated (this assumes folder names end in (cell line)_(radiated/nonradiated)', 'the other is metadata from the file which gives you the channel, size, etc.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Extract metadata?:Yes
+    Metadata data type:Text
+    Metadata types:{}
+    Extraction method count:2
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:Folder name
+    Regular expression to extract from file name:^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])
+    Regular expression to extract from folder name:.*[\\/](?P<CellLine>[A-Za-z][0-9]{2})_(?P<Radiated>[^\_/]+)
+    Extract metadata from:All images
+    Select the filtering criteria:and (file does contain "")
+    Metadata file location:Elsewhere...|
+    Match file and image metadata:[]
+    Use case insensitive matching?:No
+    Metadata file name:None
+    Does cached metadata exist?:Yes
+    Metadata extraction method:Extract from image file headers
+    Metadata source:File name
+    Regular expression to extract from file name:^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])
+    Regular expression to extract from folder name:(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$
+    Extract metadata from:All images
+    Select the filtering criteria:and (file does contain "")
+    Metadata file location:Elsewhere...|
+    Match file and image metadata:[]
+    Use case insensitive matching?:No
+    Metadata file name:None
+    Does cached metadata exist?:Yes
+
+NamesAndTypes:[module_num:3|svn_version:'Unknown'|variable_revision_number:8|show_window:False|notes:['this module selects the images of size 1 (the second largest) from each channel and assignes them as Lamin B1, P21, and Nuclei (DAPI)']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Assign a name to:Images matching rules
+    Select the image type:Grayscale image
+    Name to assign these images:DNA
+    Match metadata:[]
+    Image set matching method:Order
+    Set intensity range from:Image metadata
+    Assignments count:3
+    Single images count:0
+    Maximum intensity:255.0
+    Process as 3D?:No
+    Relative pixel spacing in X:1.0
+    Relative pixel spacing in Y:1.0
+    Relative pixel spacing in Z:1.0
+    Select the rule criteria:and (metadata does Series "1") (metadata does ChannelName "FITC")
+    Name to assign these images:LaminB1
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Maximum intensity:255.0
+    Select the rule criteria:and (metadata does Series "1") (metadata does ChannelName "DAPI")
+    Name to assign these images:Nuclei
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Maximum intensity:255.0
+    Select the rule criteria:and (metadata does Series "1") (metadata does ChannelName "AF555")
+    Name to assign these images:P21
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Maximum intensity:255.0
+
+Groups:[module_num:4|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:['The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Do you want to group your images?:No
+    grouping metadata count:1
+    Metadata category:CellLine
+
+CorrectIlluminationCalculate:[module_num:5|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:['creates an illumination function for the DAPI channel']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:Nuclei
+    Name the output image:IllumNuclei
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:30
+    Rescale the illumination function?:Yes
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:Median Filter
+    Method to calculate smoothing filter size:Manually
+    Approximate object diameter:20
+    Smoothing filter size:400
+    Retain the averaged image?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:Yes
+    Background mode:auto
+    Number of spline points:5
+    Background threshold:2.0
+    Image resampling factor:2.0
+    Maximum number of iterations:40
+    Residual value for convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:6|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:['creates an illumination function for the LaminB1 channel']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:LaminB1
+    Name the output image:IllumLaminB1
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:70
+    Rescale the illumination function?:Yes
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:Median Filter
+    Method to calculate smoothing filter size:Manually
+    Approximate object diameter:15
+    Smoothing filter size:300
+    Retain the averaged image?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:Yes
+    Background mode:auto
+    Number of spline points:5
+    Background threshold:2.0
+    Image resampling factor:2.0
+    Maximum number of iterations:40
+    Residual value for convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:7|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:['creates an illumination function for the P21 channel']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:P21
+    Name the output image:IllumP21
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:1
+    Block size:40
+    Rescale the illumination function?:Yes
+    Calculate function for each image individually, or based on all images?:Each
+    Smoothing method:Median Filter
+    Method to calculate smoothing filter size:Manually
+    Approximate object diameter:10
+    Smoothing filter size:300
+    Retain the averaged image?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:Yes
+    Background mode:auto
+    Number of spline points:5
+    Background threshold:2.0
+    Image resampling factor:2.0
+    Maximum number of iterations:40
+    Residual value for convergence:0.001
+
+CorrectIlluminationApply:[module_num:8|svn_version:'Unknown'|variable_revision_number:5|show_window:False|notes:['Applies the DAPI illumination function to the DAPI image ']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:Nuclei
+    Name the output image:CorrNuclei
+    Select the illumination function:IllumNuclei
+    Select how the illumination function is applied:Divide
+    Set output image values less than 0 equal to 0?:Yes
+    Set output image values greater than 1 equal to 1?:No
+
+CorrectIlluminationApply:[module_num:9|svn_version:'Unknown'|variable_revision_number:5|show_window:False|notes:['Applies the LaminB1 illumination function to the LaminB1 image ']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:LaminB1
+    Name the output image:CorrLaminB1
+    Select the illumination function:IllumLaminB1
+    Select how the illumination function is applied:Divide
+    Set output image values less than 0 equal to 0?:Yes
+    Set output image values greater than 1 equal to 1?:No
+
+CorrectIlluminationApply:[module_num:10|svn_version:'Unknown'|variable_revision_number:5|show_window:False|notes:['Applies the P21 illumination function to the P21 image ']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:P21
+    Name the output image:CorrP21
+    Select the illumination function:IllumP21
+    Select how the illumination function is applied:Divide
+    Set output image values less than 0 equal to 0?:Yes
+    Set output image values greater than 1 equal to 1?:No
+
+MeasureImageIntensity:[module_num:11|svn_version:'Unknown'|variable_revision_number:4|show_window:False|notes:['measures the intensity of each image']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select images to measure:CorrLaminB1, CorrNuclei, CorrP21
+    Measure the intensity only from areas enclosed by objects?:No
+    Select input object sets:
+    Calculate custom percentiles:No
+    Specify percentiles to measure:10,90
+
+ImageMath:[module_num:12|svn_version:'Unknown'|variable_revision_number:5|show_window:False|notes:['subtracting the mean image intensity of the Nuclei image from itself ', 'the mean intensity essentially represents the background intensity as most of the image is background', "this output image is used for object identification because it brings the background intensity for each image down to 0 and lets me use a manual threshold - i've found this is the best way of doing it"]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Operation:Subtract
+    Raise the power of the result by:1.0
+    Multiply the result by:1.0
+    Add to result:0.0
+    Set values less than 0 equal to 0?:Yes
+    Set values greater than 1 equal to 1?:Yes
+    Replace invalid values with 0?:Yes
+    Ignore the image masks?:No
+    Name the output image:Nucleiminusmean
+    Image or measurement?:Image
+    Select the first image:CorrNuclei
+    Multiply the first image by:1.0
+    Measurement:
+    Image or measurement?:Measurement
+    Select the second image:None
+    Multiply the second image by:1.0
+    Measurement:Intensity_MeanIntensity_CorrNuclei
+
+IdentifyPrimaryObjects:[module_num:13|svn_version:'Unknown'|variable_revision_number:15|show_window:False|notes:['idenitfication of cells using the output image from the previous module', 'the following threshold was used for each cell line:', '0.004 for E55', '0.003 for E31', '0.002 for E53', '0.001 for E57']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:Nucleiminusmean
+    Name the primary objects to be identified:NucleiObject
+    Typical diameter of objects, in pixel units (Min,Max):7,60
+    Discard objects outside the diameter range?:Yes
+    Discard objects touching the border of the image?:Yes
+    Method to distinguish clumped objects:Shape
+    Method to draw dividing lines between clumped objects:Intensity
+    Size of smoothing filter:10
+    Suppress local maxima that are closer than this minimum allowed distance:7.0
+    Speed up by using lower-resolution image to find local maxima?:No
+    Fill holes in identified objects?:After both thresholding and declumping
+    Automatically calculate size of smoothing filter for declumping?:Yes
+    Automatically calculate minimum allowed distance between local maxima?:Yes
+    Handling of objects if excessive number of objects identified:Continue
+    Maximum number of objects:500
+    Use advanced settings?:Yes
+    Threshold setting version:12
+    Threshold strategy:Global
+    Thresholding method:Manual
+    Threshold smoothing scale:1.3488
+    Threshold correction factor:1
+    Lower and upper bounds on threshold:0.0,1.0
+    Manual threshold:0.004
+    Select the measurement to threshold with:None
+    Two-class or three-class thresholding?:Two classes
+    Log transform before thresholding?:No
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Size of adaptive window:50
+    Lower outlier fraction:0.05
+    Upper outlier fraction:0.05
+    Averaging method:Mean
+    Variance method:Standard deviation
+    # of deviations:2.0
+    Thresholding method:Otsu
+
+DilateObjects:[module_num:14|svn_version:'Unknown'|variable_revision_number:1|show_window:False|notes:['dilated the cell objects by size 1', 'this allows the cells to capture intensity information from LaminB1 which stains the nuclear envelope']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input object:NucleiObject
+    Name the output object:DilatedNuclei_1
+    Structuring element:disk,1
+
+MaskImage:[module_num:15|svn_version:'Unknown'|variable_revision_number:3|show_window:False|notes:['masks out the cells in the nuclei image']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:CorrNuclei
+    Name the output image:MaskNuclei
+    Use objects or an image as a mask?:Objects
+    Select object for mask:DilatedNuclei_1
+    Select image for mask:None
+    Invert the mask?:Yes
+
+MaskImage:[module_num:16|svn_version:'Unknown'|variable_revision_number:3|show_window:False|notes:['masks out the cells in the lamin b1 image']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:CorrLaminB1
+    Name the output image:MaskLaminB1
+    Use objects or an image as a mask?:Objects
+    Select object for mask:DilatedNuclei_1
+    Select image for mask:None
+    Invert the mask?:Yes
+
+MaskImage:[module_num:17|svn_version:'Unknown'|variable_revision_number:3|show_window:False|notes:['masks out the cells in the p21 image']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:CorrP21
+    Name the output image:MaskP21
+    Use objects or an image as a mask?:Objects
+    Select object for mask:DilatedNuclei_1
+    Select image for mask:None
+    Invert the mask?:Yes
+
+MeasureImageIntensity:[module_num:18|svn_version:'Unknown'|variable_revision_number:4|show_window:False|notes:['measures the intensity of each masked image - this represents the background intensity']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select images to measure:MaskLaminB1, MaskNuclei, MaskP21
+    Measure the intensity only from areas enclosed by objects?:No
+    Select input object sets:
+    Calculate custom percentiles:No
+    Specify percentiles to measure:10,90
+
+MeasureObjectSizeShape:[module_num:19|svn_version:'Unknown'|variable_revision_number:3|show_window:False|notes:['size shape advanced features for the non-dilated object']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select object sets to measure:NucleiObject
+    Calculate the Zernike features?:No
+    Calculate the advanced features?:Yes
+
+MeasureObjectIntensity:[module_num:20|svn_version:'Unknown'|variable_revision_number:4|show_window:False|notes:['object intensity information about the dilated and nondilated objects from all images ']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select images to measure:CorrLaminB1, CorrNuclei, CorrP21
+    Select objects to measure:DilatedNuclei_1, NucleiObject
+
+MeasureObjectIntensityDistribution:[module_num:21|svn_version:'Unknown'|variable_revision_number:6|show_window:False|notes:['object intensity distribution for lamin b1 staining using the dilated nuclei']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select images to measure:CorrLaminB1, CorrNuclei, CorrP21
+    Hidden:2
+    Hidden:1
+    Hidden:0
+    Calculate intensity Zernikes?:None
+    Maximum zernike moment:9
+    Select objects to measure:NucleiObject
+    Object to use as center?:These objects
+    Select objects to use as centers:None
+    Select objects to measure:DilatedNuclei_1
+    Object to use as center?:These objects
+    Select objects to use as centers:None
+    Scale the bins?:Yes
+    Number of bins:8
+    Maximum radius:100
+
+MeasureTexture:[module_num:22|svn_version:'Unknown'|variable_revision_number:7|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select images to measure:CorrLaminB1, CorrNuclei, CorrP21
+    Select objects to measure:DilatedNuclei_1, NucleiObject
+    Enter how many gray levels to measure the texture at:256
+    Hidden:1
+    Measure whole images or objects?:Both
+    Texture scale to measure:3
+
+MeasureGranularity:[module_num:23|svn_version:'Unknown'|variable_revision_number:4|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select images to measure:CorrLaminB1, CorrNuclei, CorrP21
+    Measure within objects?:Yes
+    Select objects to measure:DilatedNuclei_1, NucleiObject
+    Subsampling factor for granularity measurements:0.25
+    Subsampling factor for background reduction:0.25
+    Radius of structuring element:15
+    Range of the granular spectrum:16
+
+OverlayOutlines:[module_num:24|svn_version:'Unknown'|variable_revision_number:4|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Display outlines on a blank image?:No
+    Select image on which to display outlines:CorrNuclei
+    Name the output image:NucleiOverlay
+    Outline display mode:Color
+    Select method to determine brightness of outlines:Max of image
+    How to outline:Inner
+    Select outline color:Red
+    Select objects to display:NucleiObject
+
+OverlayOutlines:[module_num:25|svn_version:'Unknown'|variable_revision_number:4|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Display outlines on a blank image?:No
+    Select image on which to display outlines:CorrLaminB1
+    Name the output image:LaminB1Overlay
+    Outline display mode:Color
+    Select method to determine brightness of outlines:Max of image
+    How to outline:Inner
+    Select outline color:Red
+    Select objects to display:NucleiObject
+    Select outline color:Green
+    Select objects to display:DilatedNuclei_1
+
+OverlayOutlines:[module_num:26|svn_version:'Unknown'|variable_revision_number:4|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Display outlines on a blank image?:No
+    Select image on which to display outlines:CorrP21
+    Name the output image:P21Overlay
+    Outline display mode:Color
+    Select method to determine brightness of outlines:Max of image
+    How to outline:Inner
+    Select outline color:Red
+    Select objects to display:NucleiObject
+
+DisplayDataOnImage:[module_num:27|svn_version:'Unknown'|variable_revision_number:6|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Display object or image measurements?:Object
+    Select the input objects:NucleiObject
+    Measurement to display:Number_Object_Number
+    Select the image on which to display the measurements:NucleiOverlay
+    Text color:red
+    Name the output image that has the measurements displayed:NucleiDisplayImage
+    Font size (points):10
+    Number of decimals:2
+    Image elements to save:Image
+    Annotation offset (in pixels):0
+    Display mode:Text
+    Color map:Default
+    Display background image?:Yes
+    Color map scale:Use this image's measurement range
+    Color map range:0.0,1.0
+    Font:Adobe Devanagari
+    Use scientific notation?:No
+    Font weight:normal
+
+DisplayDataOnImage:[module_num:28|svn_version:'Unknown'|variable_revision_number:6|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Display object or image measurements?:Object
+    Select the input objects:NucleiObject
+    Measurement to display:Number_Object_Number
+    Select the image on which to display the measurements:LaminB1Overlay
+    Text color:red
+    Name the output image that has the measurements displayed:LaminB1DisplayImage
+    Font size (points):10
+    Number of decimals:2
+    Image elements to save:Image
+    Annotation offset (in pixels):0
+    Display mode:Text
+    Color map:Default
+    Display background image?:Yes
+    Color map scale:Use this image's measurement range
+    Color map range:0.0,1.0
+    Font:Adobe Devanagari
+    Use scientific notation?:No
+    Font weight:normal
+
+DisplayDataOnImage:[module_num:29|svn_version:'Unknown'|variable_revision_number:6|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Display object or image measurements?:Object
+    Select the input objects:NucleiObject
+    Measurement to display:Number_Object_Number
+    Select the image on which to display the measurements:P21Overlay
+    Text color:red
+    Name the output image that has the measurements displayed:P21DisplayImage
+    Font size (points):10
+    Number of decimals:2
+    Image elements to save:Image
+    Annotation offset (in pixels):0
+    Display mode:Text
+    Color map:Default
+    Display background image?:Yes
+    Color map scale:Use this image's measurement range
+    Color map range:0.0,1.0
+    Font:Adobe Devanagari
+    Use scientific notation?:No
+    Font weight:normal
+
+SaveImages:[module_num:30|svn_version:'Unknown'|variable_revision_number:16|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Select the type of image to save:Image
+    Select the image to save:NucleiDisplayImage
+    Select method for constructing file names:From image filename
+    Select image name for file prefix:Nuclei
+    Enter single file name:OrigBlue
+    Number of digits:4
+    Append a suffix to the image file name?:Yes
+    Text to append to the image name:_Nuclei
+    Saved file format:jpeg
+    Output file location:Default Output Folder|
+    Image bit depth:32-bit floating point
+    Overwrite existing files without warning?:Yes
+    When to save:Every cycle
+    Record the file and path information to the saved image?:No
+    Create subfolders in the output folder?:No
+    Base image folder:Elsewhere...|
+    How to save the series:T (Time)
+    Save with lossless compression?:Yes
+
+SaveImages:[module_num:31|svn_version:'Unknown'|variable_revision_number:16|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Select the type of image to save:Image
+    Select the image to save:LaminB1DisplayImage
+    Select method for constructing file names:From image filename
+    Select image name for file prefix:Nuclei
+    Enter single file name:OrigBlue
+    Number of digits:4
+    Append a suffix to the image file name?:Yes
+    Text to append to the image name:_LaminB1
+    Saved file format:jpeg
+    Output file location:Default Output Folder|
+    Image bit depth:No conversion
+    Overwrite existing files without warning?:Yes
+    When to save:Every cycle
+    Record the file and path information to the saved image?:No
+    Create subfolders in the output folder?:No
+    Base image folder:Elsewhere...|
+    How to save the series:T (Time)
+    Save with lossless compression?:Yes
+
+SaveImages:[module_num:32|svn_version:'Unknown'|variable_revision_number:16|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:False|wants_pause:False]
+    Select the type of image to save:Image
+    Select the image to save:P21DisplayImage
+    Select method for constructing file names:From image filename
+    Select image name for file prefix:Nuclei
+    Enter single file name:OrigBlue
+    Number of digits:4
+    Append a suffix to the image file name?:Yes
+    Text to append to the image name:_P21
+    Saved file format:jpeg
+    Output file location:Default Output Folder|
+    Image bit depth:No conversion
+    Overwrite existing files without warning?:Yes
+    When to save:Every cycle
+    Record the file and path information to the saved image?:No
+    Create subfolders in the output folder?:No
+    Base image folder:Elsewhere...|
+    How to save the series:T (Time)
+    Save with lossless compression?:Yes
+
+ExportToSpreadsheet:[module_num:33|svn_version:'Unknown'|variable_revision_number:13|show_window:False|notes:['exporting all data to an excel spreadsheet ', 'file name should be changed appropriately', '']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the column delimiter:Comma (",")
+    Add image metadata columns to your object data file?:Yes
+    Add image file and folder names to your object data file?:Yes
+    Select the measurements to export:No
+    Calculate the per-image mean values for object measurements?:Yes
+    Calculate the per-image median values for object measurements?:Yes
+    Calculate the per-image standard deviation values for object measurements?:Yes
+    Output file location:Default Output Folder|OneDrive - University of Edinburgh\\050523
+    Create a GenePattern GCT file?:No
+    Select source of sample row name:Metadata
+    Select the image to use as the identifier:None
+    Select the metadata to use as the identifier:None
+    Export all measurement types?:Yes
+    Press button to select measurements:DilatedNuclei|RadialDistribution_RadialCV_CorrLaminB1_2of8,DilatedNuclei|RadialDistribution_RadialCV_CorrLaminB1_1of8,DilatedNuclei|RadialDistribution_RadialCV_CorrLaminB1_8of8,DilatedNuclei|RadialDistribution_RadialCV_CorrLaminB1_5of8,DilatedNuclei|RadialDistribution_RadialCV_CorrLaminB1_4of8,DilatedNuclei|RadialDistribution_RadialCV_CorrLaminB1_6of8,DilatedNuclei|RadialDistribution_RadialCV_CorrLaminB1_3of8,DilatedNuclei|RadialDistribution_RadialCV_CorrLaminB1_7of8,DilatedNuclei|RadialDistribution_RadialCV_CorrNuclei_3of8,DilatedNuclei|RadialDistribution_RadialCV_CorrNuclei_1of8,DilatedNuclei|RadialDistribution_RadialCV_CorrNuclei_2of8,DilatedNuclei|RadialDistribution_RadialCV_CorrNuclei_6of8,DilatedNuclei|RadialDistribution_RadialCV_CorrNuclei_4of8,DilatedNuclei|RadialDistribution_RadialCV_CorrNuclei_8of8,DilatedNuclei|RadialDistribution_RadialCV_CorrNuclei_5of8,DilatedNuclei|RadialDistribution_RadialCV_CorrNuclei_7of8,DilatedNuclei|RadialDistribution_RadialCV_CorrP21_6of8,DilatedNuclei|RadialDistribution_RadialCV_CorrP21_2of8,DilatedNuclei|RadialDistribution_RadialCV_CorrP21_7of8,DilatedNuclei|RadialDistribution_RadialCV_CorrP21_4of8,DilatedNuclei|RadialDistribution_RadialCV_CorrP21_1of8,DilatedNuclei|RadialDistribution_RadialCV_CorrP21_3of8,DilatedNuclei|RadialDistribution_RadialCV_CorrP21_5of8,DilatedNuclei|RadialDistribution_RadialCV_CorrP21_8of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrLaminB1_8of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrLaminB1_4of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrLaminB1_3of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrLaminB1_7of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrLaminB1_6of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrLaminB1_5of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrLaminB1_1of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrLaminB1_2of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrP21_3of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrP21_2of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrP21_6of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrP21_8of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrP21_4of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrP21_7of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrP21_1of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrP21_5of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrNuclei_5of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrNuclei_1of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrNuclei_2of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrNuclei_4of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrNuclei_8of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrNuclei_7of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrNuclei_3of8,DilatedNuclei|RadialDistribution_MeanFrac_CorrNuclei_6of8,DilatedNuclei|RadialDistribution_FracAtD_CorrNuclei_8of8,DilatedNuclei|RadialDistribution_FracAtD_CorrNuclei_7of8,DilatedNuclei|RadialDistribution_FracAtD_CorrNuclei_4of8,DilatedNuclei|RadialDistribution_FracAtD_CorrNuclei_2of8,DilatedNuclei|RadialDistribution_FracAtD_CorrNuclei_5of8,DilatedNuclei|RadialDistribution_FracAtD_CorrNuclei_3of8,DilatedNuclei|RadialDistribution_FracAtD_CorrNuclei_1of8,DilatedNuclei|RadialDistribution_FracAtD_CorrNuclei_6of8,DilatedNuclei|RadialDistribution_FracAtD_CorrLaminB1_2of8,DilatedNuclei|RadialDistribution_FracAtD_CorrLaminB1_4of8,DilatedNuclei|RadialDistribution_FracAtD_CorrLaminB1_6of8,DilatedNuclei|RadialDistribution_FracAtD_CorrLaminB1_3of8,DilatedNuclei|RadialDistribution_FracAtD_CorrLaminB1_1of8,DilatedNuclei|RadialDistribution_FracAtD_CorrLaminB1_5of8,DilatedNuclei|RadialDistribution_FracAtD_CorrLaminB1_7of8,DilatedNuclei|RadialDistribution_FracAtD_CorrLaminB1_8of8,DilatedNuclei|RadialDistribution_FracAtD_CorrP21_8of8,DilatedNuclei|RadialDistribution_FracAtD_CorrP21_5of8,DilatedNuclei|RadialDistribution_FracAtD_CorrP21_4of8,DilatedNuclei|RadialDistribution_FracAtD_CorrP21_2of8,DilatedNuclei|RadialDistribution_FracAtD_CorrP21_1of8,DilatedNuclei|RadialDistribution_FracAtD_CorrP21_3of8,DilatedNuclei|RadialDistribution_FracAtD_CorrP21_6of8,DilatedNuclei|RadialDistribution_FracAtD_CorrP21_7of8,DilatedNuclei|Texture_InfoMeas2_CorrNuclei_3_00_256,DilatedNuclei|Texture_InfoMeas2_CorrNuclei_3_02_256,DilatedNuclei|Texture_InfoMeas2_CorrNuclei_3_01_256,DilatedNuclei|Texture_InfoMeas2_CorrNuclei_3_03_256,DilatedNuclei|Texture_InfoMeas2_CorrP21_3_00_256,DilatedNuclei|Texture_InfoMeas2_CorrP21_3_03_256,DilatedNuclei|Texture_InfoMeas2_CorrP21_3_01_256,DilatedNuclei|Texture_InfoMeas2_CorrP21_3_02_256,DilatedNuclei|Texture_InfoMeas2_CorrLaminB1_3_02_256,DilatedNuclei|Texture_InfoMeas2_CorrLaminB1_3_03_256,DilatedNuclei|Texture_InfoMeas2_CorrLaminB1_3_01_256,DilatedNuclei|Texture_InfoMeas2_CorrLaminB1_3_00_256,DilatedNuclei|Texture_DifferenceVariance_CorrNuclei_3_01_256,DilatedNuclei|Texture_DifferenceVariance_CorrNuclei_3_02_256,DilatedNuclei|Texture_DifferenceVariance_CorrNuclei_3_03_256,DilatedNuclei|Texture_DifferenceVariance_CorrNuclei_3_00_256,DilatedNuclei|Texture_DifferenceVariance_CorrP21_3_03_256,DilatedNuclei|Texture_DifferenceVariance_CorrP21_3_00_256,DilatedNuclei|Texture_DifferenceVariance_CorrP21_3_01_256,DilatedNuclei|Texture_DifferenceVariance_CorrP21_3_02_256,DilatedNuclei|Texture_DifferenceVariance_CorrLaminB1_3_01_256,DilatedNuclei|Texture_DifferenceVariance_CorrLaminB1_3_00_256,DilatedNuclei|Texture_DifferenceVariance_CorrLaminB1_3_03_256,DilatedNuclei|Texture_DifferenceVariance_CorrLaminB1_3_02_256,DilatedNuclei|Texture_InfoMeas1_CorrNuclei_3_02_256,DilatedNuclei|Texture_InfoMeas1_CorrNuclei_3_01_256,DilatedNuclei|Texture_InfoMeas1_CorrNuclei_3_03_256,DilatedNuclei|Texture_InfoMeas1_CorrNuclei_3_00_256,DilatedNuclei|Texture_InfoMeas1_CorrLaminB1_3_03_256,DilatedNuclei|Texture_InfoMeas1_CorrLaminB1_3_02_256,DilatedNuclei|Texture_InfoMeas1_CorrLaminB1_3_01_256,DilatedNuclei|Texture_InfoMeas1_CorrLaminB1_3_00_256,DilatedNuclei|Texture_InfoMeas1_CorrP21_3_00_256,DilatedNuclei|Texture_InfoMeas1_CorrP21_3_01_256,DilatedNuclei|Texture_InfoMeas1_CorrP21_3_03_256,DilatedNuclei|Texture_InfoMeas1_CorrP21_3_02_256,DilatedNuclei|Texture_Contrast_CorrLaminB1_3_00_256,DilatedNuclei|Texture_Contrast_CorrLaminB1_3_02_256,DilatedNuclei|Texture_Contrast_CorrLaminB1_3_03_256,DilatedNuclei|Texture_Contrast_CorrLaminB1_3_01_256,DilatedNuclei|Texture_Contrast_CorrNuclei_3_03_256,DilatedNuclei|Texture_Contrast_CorrNuclei_3_01_256,DilatedNuclei|Texture_Contrast_CorrNuclei_3_02_256,DilatedNuclei|Texture_Contrast_CorrNuclei_3_00_256,DilatedNuclei|Texture_Contrast_CorrP21_3_01_256,DilatedNuclei|Texture_Contrast_CorrP21_3_03_256,DilatedNuclei|Texture_Contrast_CorrP21_3_02_256,DilatedNuclei|Texture_Contrast_CorrP21_3_00_256,DilatedNuclei|Texture_SumEntropy_CorrNuclei_3_02_256,DilatedNuclei|Texture_SumEntropy_CorrNuclei_3_03_256,DilatedNuclei|Texture_SumEntropy_CorrNuclei_3_00_256,DilatedNuclei|Texture_SumEntropy_CorrNuclei_3_01_256,DilatedNuclei|Texture_SumEntropy_CorrLaminB1_3_03_256,DilatedNuclei|Texture_SumEntropy_CorrLaminB1_3_00_256,DilatedNuclei|Texture_SumEntropy_CorrLaminB1_3_02_256,DilatedNuclei|Texture_SumEntropy_CorrLaminB1_3_01_256,DilatedNuclei|Texture_SumEntropy_CorrP21_3_02_256,DilatedNuclei|Texture_SumEntropy_CorrP21_3_00_256,DilatedNuclei|Texture_SumEntropy_CorrP21_3_03_256,DilatedNuclei|Texture_SumEntropy_CorrP21_3_01_256,DilatedNuclei|Texture_Correlation_CorrLaminB1_3_01_256,DilatedNuclei|Texture_Correlation_CorrLaminB1_3_00_256,DilatedNuclei|Texture_Correlation_CorrLaminB1_3_03_256,DilatedNuclei|Texture_Correlation_CorrLaminB1_3_02_256,DilatedNuclei|Texture_Correlation_CorrP21_3_01_256,DilatedNuclei|Texture_Correlation_CorrP21_3_00_256,DilatedNuclei|Texture_Correlation_CorrP21_3_03_256,DilatedNuclei|Texture_Correlation_CorrP21_3_02_256,DilatedNuclei|Texture_Correlation_CorrNuclei_3_03_256,DilatedNuclei|Texture_Correlation_CorrNuclei_3_00_256,DilatedNuclei|Texture_Correlation_CorrNuclei_3_02_256,DilatedNuclei|Texture_Correlation_CorrNuclei_3_01_256,DilatedNuclei|Texture_Variance_CorrP21_3_00_256,DilatedNuclei|Texture_Variance_CorrP21_3_01_256,DilatedNuclei|Texture_Variance_CorrP21_3_03_256,DilatedNuclei|Texture_Variance_CorrP21_3_02_256,DilatedNuclei|Texture_Variance_CorrNuclei_3_02_256,DilatedNuclei|Texture_Variance_CorrNuclei_3_03_256,DilatedNuclei|Texture_Variance_CorrNuclei_3_01_256,DilatedNuclei|Texture_Variance_CorrNuclei_3_00_256,DilatedNuclei|Texture_Variance_CorrLaminB1_3_02_256,DilatedNuclei|Texture_Variance_CorrLaminB1_3_01_256,DilatedNuclei|Texture_Variance_CorrLaminB1_3_00_256,DilatedNuclei|Texture_Variance_CorrLaminB1_3_03_256,DilatedNuclei|Texture_AngularSecondMoment_CorrP21_3_02_256,DilatedNuclei|Texture_AngularSecondMoment_CorrP21_3_03_256,DilatedNuclei|Texture_AngularSecondMoment_CorrP21_3_01_256,DilatedNuclei|Texture_AngularSecondMoment_CorrP21_3_00_256,DilatedNuclei|Texture_AngularSecondMoment_CorrNuclei_3_03_256,DilatedNuclei|Texture_AngularSecondMoment_CorrNuclei_3_00_256,DilatedNuclei|Texture_AngularSecondMoment_CorrNuclei_3_02_256,DilatedNuclei|Texture_AngularSecondMoment_CorrNuclei_3_01_256,DilatedNuclei|Texture_AngularSecondMoment_CorrLaminB1_3_01_256,DilatedNuclei|Texture_AngularSecondMoment_CorrLaminB1_3_02_256,DilatedNuclei|Texture_AngularSecondMoment_CorrLaminB1_3_00_256,DilatedNuclei|Texture_AngularSecondMoment_CorrLaminB1_3_03_256,DilatedNuclei|Texture_SumVariance_CorrLaminB1_3_02_256,DilatedNuclei|Texture_SumVariance_CorrLaminB1_3_01_256,DilatedNuclei|Texture_SumVariance_CorrLaminB1_3_03_256,DilatedNuclei|Texture_SumVariance_CorrLaminB1_3_00_256,DilatedNuclei|Texture_SumVariance_CorrP21_3_00_256,DilatedNuclei|Texture_SumVariance_CorrP21_3_01_256,DilatedNuclei|Texture_SumVariance_CorrP21_3_03_256,DilatedNuclei|Texture_SumVariance_CorrP21_3_02_256,DilatedNuclei|Texture_SumVariance_CorrNuclei_3_02_256,DilatedNuclei|Texture_SumVariance_CorrNuclei_3_00_256,DilatedNuclei|Texture_SumVariance_CorrNuclei_3_03_256,DilatedNuclei|Texture_SumVariance_CorrNuclei_3_01_256,DilatedNuclei|Texture_SumAverage_CorrNuclei_3_03_256,DilatedNuclei|Texture_SumAverage_CorrNuclei_3_02_256,DilatedNuclei|Texture_SumAverage_CorrNuclei_3_00_256,DilatedNuclei|Texture_SumAverage_CorrNuclei_3_01_256,DilatedNuclei|Texture_SumAverage_CorrLaminB1_3_03_256,DilatedNuclei|Texture_SumAverage_CorrLaminB1_3_02_256,DilatedNuclei|Texture_SumAverage_CorrLaminB1_3_00_256,DilatedNuclei|Texture_SumAverage_CorrLaminB1_3_01_256,DilatedNuclei|Texture_SumAverage_CorrP21_3_00_256,DilatedNuclei|Texture_SumAverage_CorrP21_3_03_256,DilatedNuclei|Texture_SumAverage_CorrP21_3_02_256,DilatedNuclei|Texture_SumAverage_CorrP21_3_01_256,DilatedNuclei|Texture_DifferenceEntropy_CorrNuclei_3_01_256,DilatedNuclei|Texture_DifferenceEntropy_CorrNuclei_3_00_256,DilatedNuclei|Texture_DifferenceEntropy_CorrNuclei_3_02_256,DilatedNuclei|Texture_DifferenceEntropy_CorrNuclei_3_03_256,DilatedNuclei|Texture_DifferenceEntropy_CorrLaminB1_3_02_256,DilatedNuclei|Texture_DifferenceEntropy_CorrLaminB1_3_00_256,DilatedNuclei|Texture_DifferenceEntropy_CorrLaminB1_3_01_256,DilatedNuclei|Texture_DifferenceEntropy_CorrLaminB1_3_03_256,DilatedNuclei|Texture_DifferenceEntropy_CorrP21_3_01_256,DilatedNuclei|Texture_DifferenceEntropy_CorrP21_3_02_256,DilatedNuclei|Texture_DifferenceEntropy_CorrP21_3_03_256,DilatedNuclei|Texture_DifferenceEntropy_CorrP21_3_00_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrNuclei_3_00_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrNuclei_3_03_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrNuclei_3_02_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrNuclei_3_01_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrP21_3_00_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrP21_3_03_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrP21_3_01_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrP21_3_02_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrLaminB1_3_02_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrLaminB1_3_03_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrLaminB1_3_01_256,DilatedNuclei|Texture_InverseDifferenceMoment_CorrLaminB1_3_00_256,DilatedNuclei|Texture_Entropy_CorrP21_3_01_256,DilatedNuclei|Texture_Entropy_CorrP21_3_03_256,DilatedNuclei|Texture_Entropy_CorrP21_3_02_256,DilatedNuclei|Texture_Entropy_CorrP21_3_00_256,DilatedNuclei|Texture_Entropy_CorrNuclei_3_01_256,DilatedNuclei|Texture_Entropy_CorrNuclei_3_02_256,DilatedNuclei|Texture_Entropy_CorrNuclei_3_03_256,DilatedNuclei|Texture_Entropy_CorrNuclei_3_00_256,DilatedNuclei|Texture_Entropy_CorrLaminB1_3_00_256,DilatedNuclei|Texture_Entropy_CorrLaminB1_3_02_256,DilatedNuclei|Texture_Entropy_CorrLaminB1_3_03_256,DilatedNuclei|Texture_Entropy_CorrLaminB1_3_01_256,DilatedNuclei|Intensity_MeanIntensityEdge_CorrNuclei,DilatedNuclei|Intensity_MeanIntensityEdge_CorrLaminB1,DilatedNuclei|Intensity_MeanIntensityEdge_CorrP21,DilatedNuclei|Intensity_MinIntensityEdge_CorrLaminB1,DilatedNuclei|Intensity_MinIntensityEdge_CorrNuclei,DilatedNuclei|Intensity_MinIntensityEdge_CorrP21,DilatedNuclei|Intensity_IntegratedIntensityEdge_CorrNuclei,DilatedNuclei|Intensity_IntegratedIntensityEdge_CorrLaminB1,DilatedNuclei|Intensity_IntegratedIntensityEdge_CorrP21,DilatedNuclei|Intensity_MADIntensity_CorrLaminB1,DilatedNuclei|Intensity_MADIntensity_CorrNuclei,DilatedNuclei|Intensity_MADIntensity_CorrP21,DilatedNuclei|Intensity_MassDisplacement_CorrP21,DilatedNuclei|Intensity_MassDisplacement_CorrLaminB1,DilatedNuclei|Intensity_MassDisplacement_CorrNuclei,DilatedNuclei|Intensity_MinIntensity_CorrLaminB1,DilatedNuclei|Intensity_MinIntensity_CorrNuclei,DilatedNuclei|Intensity_MinIntensity_CorrP21,DilatedNuclei|Intensity_IntegratedIntensity_CorrP21,DilatedNuclei|Intensity_IntegratedIntensity_CorrLaminB1,DilatedNuclei|Intensity_IntegratedIntensity_CorrNuclei,DilatedNuclei|Intensity_MaxIntensity_CorrLaminB1,DilatedNuclei|Intensity_MaxIntensity_CorrNuclei,DilatedNuclei|Intensity_MaxIntensity_CorrP21,DilatedNuclei|Intensity_StdIntensity_CorrNuclei,DilatedNuclei|Intensity_StdIntensity_CorrLaminB1,DilatedNuclei|Intensity_StdIntensity_CorrP21,DilatedNuclei|Intensity_MeanIntensity_CorrLaminB1,DilatedNuclei|Intensity_MeanIntensity_CorrNuclei,DilatedNuclei|Intensity_MeanIntensity_CorrP21,DilatedNuclei|Intensity_MedianIntensity_CorrP21,DilatedNuclei|Intensity_MedianIntensity_CorrNuclei,DilatedNuclei|Intensity_MedianIntensity_CorrLaminB1,DilatedNuclei|Intensity_StdIntensityEdge_CorrLaminB1,DilatedNuclei|Intensity_StdIntensityEdge_CorrNuclei,DilatedNuclei|Intensity_StdIntensityEdge_CorrP21,DilatedNuclei|Intensity_MaxIntensityEdge_CorrLaminB1,DilatedNuclei|Intensity_MaxIntensityEdge_CorrNuclei,DilatedNuclei|Intensity_MaxIntensityEdge_CorrP21,DilatedNuclei|Intensity_LowerQuartileIntensity_CorrNuclei,DilatedNuclei|Intensity_LowerQuartileIntensity_CorrP21,DilatedNuclei|Intensity_LowerQuartileIntensity_CorrLaminB1,DilatedNuclei|Intensity_UpperQuartileIntensity_CorrNuclei,DilatedNuclei|Intensity_UpperQuartileIntensity_CorrP21,DilatedNuclei|Intensity_UpperQuartileIntensity_CorrLaminB1,DilatedNuclei|Location_CenterMassIntensity_Z_CorrP21,DilatedNuclei|Location_CenterMassIntensity_Z_CorrNuclei,DilatedNuclei|Location_CenterMassIntensity_Z_CorrLaminB1,DilatedNuclei|Location_CenterMassIntensity_Y_CorrLaminB1,DilatedNuclei|Location_CenterMassIntensity_Y_CorrNuclei,DilatedNuclei|Location_CenterMassIntensity_Y_CorrP21,DilatedNuclei|Location_CenterMassIntensity_X_CorrLaminB1,DilatedNuclei|Location_CenterMassIntensity_X_CorrP21,DilatedNuclei|Location_CenterMassIntensity_X_CorrNuclei,DilatedNuclei|Location_MaxIntensity_Z_CorrLaminB1,DilatedNuclei|Location_MaxIntensity_Z_CorrNuclei,DilatedNuclei|Location_MaxIntensity_Z_CorrP21,DilatedNuclei|Location_MaxIntensity_X_CorrP21,DilatedNuclei|Location_MaxIntensity_X_CorrLaminB1,DilatedNuclei|Location_MaxIntensity_X_CorrNuclei,DilatedNuclei|Location_MaxIntensity_Y_CorrNuclei,DilatedNuclei|Location_MaxIntensity_Y_CorrLaminB1,DilatedNuclei|Location_MaxIntensity_Y_CorrP21,DilatedNuclei|Location_Center_X,DilatedNuclei|Location_Center_Y,DilatedNuclei|Location_Center_Z,DilatedNuclei|Granularity_6_CorrLaminB1,DilatedNuclei|Granularity_6_CorrNuclei,DilatedNuclei|Granularity_6_CorrP21,DilatedNuclei|Granularity_10_CorrP21,DilatedNuclei|Granularity_10_CorrLaminB1,DilatedNuclei|Granularity_10_CorrNuclei,DilatedNuclei|Granularity_5_CorrLaminB1,DilatedNuclei|Granularity_5_CorrP21,DilatedNuclei|Granularity_5_CorrNuclei,DilatedNuclei|Granularity_4_CorrNuclei,DilatedNuclei|Granularity_4_CorrP21,DilatedNuclei|Granularity_4_CorrLaminB1,DilatedNuclei|Granularity_7_CorrP21,DilatedNuclei|Granularity_7_CorrLaminB1,DilatedNuclei|Granularity_7_CorrNuclei,DilatedNuclei|Granularity_1_CorrLaminB1,DilatedNuclei|Granularity_1_CorrP21,DilatedNuclei|Granularity_1_CorrNuclei,DilatedNuclei|Granularity_3_CorrP21,DilatedNuclei|Granularity_3_CorrLaminB1,DilatedNuclei|Granularity_3_CorrNuclei,DilatedNuclei|Granularity_9_CorrNuclei,DilatedNuclei|Granularity_9_CorrLaminB1,DilatedNuclei|Granularity_9_CorrP21,DilatedNuclei|Granularity_2_CorrP21,DilatedNuclei|Granularity_2_CorrLaminB1,DilatedNuclei|Granularity_2_CorrNuclei,DilatedNuclei|Granularity_14_CorrP21,DilatedNuclei|Granularity_14_CorrLaminB1,DilatedNuclei|Granularity_14_CorrNuclei,DilatedNuclei|Granularity_8_CorrLaminB1,DilatedNuclei|Granularity_8_CorrP21,DilatedNuclei|Granularity_8_CorrNuclei,DilatedNuclei|Granularity_16_CorrLaminB1,DilatedNuclei|Granularity_16_CorrP21,DilatedNuclei|Granularity_16_CorrNuclei,DilatedNuclei|Granularity_12_CorrLaminB1,DilatedNuclei|Granularity_12_CorrP21,DilatedNuclei|Granularity_12_CorrNuclei,DilatedNuclei|Granularity_11_CorrP21,DilatedNuclei|Granularity_11_CorrNuclei,DilatedNuclei|Granularity_11_CorrLaminB1,DilatedNuclei|Granularity_13_CorrP21,DilatedNuclei|Granularity_13_CorrNuclei,DilatedNuclei|Granularity_13_CorrLaminB1,DilatedNuclei|Granularity_15_CorrNuclei,DilatedNuclei|Granularity_15_CorrLaminB1,DilatedNuclei|Granularity_15_CorrP21,DilatedNuclei|Number_Object_Number,DilatedNuclei|Parent_NucleiObject,NucleiObject|Intensity_MeanIntensity_CorrP21,NucleiObject|Intensity_MeanIntensity_CorrLaminB1,NucleiObject|Intensity_MeanIntensity_CorrNuclei,NucleiObject|Intensity_MassDisplacement_CorrNuclei,NucleiObject|Intensity_MassDisplacement_CorrLaminB1,NucleiObject|Intensity_MassDisplacement_CorrP21,NucleiObject|Intensity_IntegratedIntensityEdge_CorrP21,NucleiObject|Intensity_IntegratedIntensityEdge_CorrNuclei,NucleiObject|Intensity_IntegratedIntensityEdge_CorrLaminB1,NucleiObject|Intensity_IntegratedIntensity_CorrP21,NucleiObject|Intensity_IntegratedIntensity_CorrLaminB1,NucleiObject|Intensity_IntegratedIntensity_CorrNuclei,NucleiObject|Intensity_MaxIntensity_CorrLaminB1,NucleiObject|Intensity_MaxIntensity_CorrNuclei,NucleiObject|Intensity_MaxIntensity_CorrP21,NucleiObject|Intensity_StdIntensity_CorrP21,NucleiObject|Intensity_StdIntensity_CorrLaminB1,NucleiObject|Intensity_StdIntensity_CorrNuclei,NucleiObject|Intensity_UpperQuartileIntensity_CorrP21,NucleiObject|Intensity_UpperQuartileIntensity_CorrNuclei,NucleiObject|Intensity_UpperQuartileIntensity_CorrLaminB1,NucleiObject|Intensity_MedianIntensity_CorrP21,NucleiObject|Intensity_MedianIntensity_CorrLaminB1,NucleiObject|Intensity_MedianIntensity_CorrNuclei,NucleiObject|Intensity_MaxIntensityEdge_CorrNuclei,NucleiObject|Intensity_MaxIntensityEdge_CorrP21,NucleiObject|Intensity_MaxIntensityEdge_CorrLaminB1,NucleiObject|Intensity_MinIntensityEdge_CorrNuclei,NucleiObject|Intensity_MinIntensityEdge_CorrP21,NucleiObject|Intensity_MinIntensityEdge_CorrLaminB1,NucleiObject|Intensity_LowerQuartileIntensity_CorrLaminB1,NucleiObject|Intensity_LowerQuartileIntensity_CorrNuclei,NucleiObject|Intensity_LowerQuartileIntensity_CorrP21,NucleiObject|Intensity_MADIntensity_CorrLaminB1,NucleiObject|Intensity_MADIntensity_CorrNuclei,NucleiObject|Intensity_MADIntensity_CorrP21,NucleiObject|Intensity_MinIntensity_CorrP21,NucleiObject|Intensity_MinIntensity_CorrNuclei,NucleiObject|Intensity_MinIntensity_CorrLaminB1,NucleiObject|Intensity_StdIntensityEdge_CorrNuclei,NucleiObject|Intensity_StdIntensityEdge_CorrP21,NucleiObject|Intensity_StdIntensityEdge_CorrLaminB1,NucleiObject|Intensity_MeanIntensityEdge_CorrLaminB1,NucleiObject|Intensity_MeanIntensityEdge_CorrP21,NucleiObject|Intensity_MeanIntensityEdge_CorrNuclei,NucleiObject|AreaShape_Orientation,NucleiObject|AreaShape_CentralMoment_1_2,NucleiObject|AreaShape_CentralMoment_1_3,NucleiObject|AreaShape_CentralMoment_1_1,NucleiObject|AreaShape_CentralMoment_1_0,NucleiObject|AreaShape_CentralMoment_0_3,NucleiObject|AreaShape_CentralMoment_0_0,NucleiObject|AreaShape_CentralMoment_0_2,NucleiObject|AreaShape_CentralMoment_0_1,NucleiObject|AreaShape_CentralMoment_2_2,NucleiObject|AreaShape_CentralMoment_2_1,NucleiObject|AreaShape_CentralMoment_2_3,NucleiObject|AreaShape_CentralMoment_2_0,NucleiObject|AreaShape_SpatialMoment_2_3,NucleiObject|AreaShape_SpatialMoment_2_0,NucleiObject|AreaShape_SpatialMoment_2_2,NucleiObject|AreaShape_SpatialMoment_2_1,NucleiObject|AreaShape_SpatialMoment_1_2,NucleiObject|AreaShape_SpatialMoment_1_1,NucleiObject|AreaShape_SpatialMoment_1_0,NucleiObject|AreaShape_SpatialMoment_1_3,NucleiObject|AreaShape_SpatialMoment_0_3,NucleiObject|AreaShape_SpatialMoment_0_1,NucleiObject|AreaShape_SpatialMoment_0_0,NucleiObject|AreaShape_SpatialMoment_0_2,NucleiObject|AreaShape_EquivalentDiameter,NucleiObject|AreaShape_NormalizedMoment_2_0,NucleiObject|AreaShape_NormalizedMoment_2_2,NucleiObject|AreaShape_NormalizedMoment_2_3,NucleiObject|AreaShape_NormalizedMoment_2_1,NucleiObject|AreaShape_NormalizedMoment_1_2,NucleiObject|AreaShape_NormalizedMoment_1_3,NucleiObject|AreaShape_NormalizedMoment_1_1,NucleiObject|AreaShape_NormalizedMoment_1_0,NucleiObject|AreaShape_NormalizedMoment_0_2,NucleiObject|AreaShape_NormalizedMoment_0_3,NucleiObject|AreaShape_NormalizedMoment_0_0,NucleiObject|AreaShape_NormalizedMoment_0_1,NucleiObject|AreaShape_NormalizedMoment_3_3,NucleiObject|AreaShape_NormalizedMoment_3_1,NucleiObject|AreaShape_NormalizedMoment_3_2,NucleiObject|AreaShape_NormalizedMoment_3_0,NucleiObject|AreaShape_MeanRadius,NucleiObject|AreaShape_Eccentricity,NucleiObject|AreaShape_BoundingBoxMinimum_X,NucleiObject|AreaShape_BoundingBoxMinimum_Y,NucleiObject|AreaShape_EulerNumber,NucleiObject|AreaShape_FormFactor,NucleiObject|AreaShape_MinFeretDiameter,NucleiObject|AreaShape_InertiaTensor_0_1,NucleiObject|AreaShape_InertiaTensor_0_0,NucleiObject|AreaShape_InertiaTensor_1_0,NucleiObject|AreaShape_InertiaTensor_1_1,NucleiObject|AreaShape_MedianRadius,NucleiObject|AreaShape_Solidity,NucleiObject|AreaShape_Area,NucleiObject|AreaShape_HuMoment_3,NucleiObject|AreaShape_HuMoment_1,NucleiObject|AreaShape_HuMoment_4,NucleiObject|AreaShape_HuMoment_0,NucleiObject|AreaShape_HuMoment_6,NucleiObject|AreaShape_HuMoment_5,NucleiObject|AreaShape_HuMoment_2,NucleiObject|AreaShape_Extent,NucleiObject|AreaShape_MaxFeretDiameter,NucleiObject|AreaShape_MajorAxisLength,NucleiObject|AreaShape_BoundingBoxArea,NucleiObject|AreaShape_Center_X,NucleiObject|AreaShape_Center_Y,NucleiObject|AreaShape_Perimeter,NucleiObject|AreaShape_Compactness,NucleiObject|AreaShape_ConvexArea,NucleiObject|AreaShape_MinorAxisLength,NucleiObject|AreaShape_InertiaTensorEigenvalues_1,NucleiObject|AreaShape_InertiaTensorEigenvalues_0,NucleiObject|AreaShape_BoundingBoxMaximum_X,NucleiObject|AreaShape_BoundingBoxMaximum_Y,NucleiObject|AreaShape_MaximumRadius,NucleiObject|Location_MaxIntensity_Z_CorrLaminB1,NucleiObject|Location_MaxIntensity_Z_CorrNuclei,NucleiObject|Location_MaxIntensity_Z_CorrP21,NucleiObject|Location_MaxIntensity_Y_CorrLaminB1,NucleiObject|Location_MaxIntensity_Y_CorrP21,NucleiObject|Location_MaxIntensity_Y_CorrNuclei,NucleiObject|Location_MaxIntensity_X_CorrNuclei,NucleiObject|Location_MaxIntensity_X_CorrP21,NucleiObject|Location_MaxIntensity_X_CorrLaminB1,NucleiObject|Location_CenterMassIntensity_Z_CorrNuclei,NucleiObject|Location_CenterMassIntensity_Z_CorrP21,NucleiObject|Location_CenterMassIntensity_Z_CorrLaminB1,NucleiObject|Location_CenterMassIntensity_Y_CorrLaminB1,NucleiObject|Location_CenterMassIntensity_Y_CorrNuclei,NucleiObject|Location_CenterMassIntensity_Y_CorrP21,NucleiObject|Location_CenterMassIntensity_X_CorrNuclei,NucleiObject|Location_CenterMassIntensity_X_CorrLaminB1,NucleiObject|Location_CenterMassIntensity_X_CorrP21,NucleiObject|Location_Center_Y,NucleiObject|Location_Center_Z,NucleiObject|Location_Center_X,NucleiObject|Children_DilatedNuclei_Count,NucleiObject|Number_Object_Number
+    Representation of Nan/Inf:NaN
+    Add a prefix to file names?:Yes
+    Filename prefix:E55_rad_
+    Overwrite existing files without warning?:No
+    Data to export:Do not use
+    Combine these object measurements with those of the previous object?:No
+    File name:DATA.csv
+    Use the object name for the file name?:Yes

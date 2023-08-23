@@ -1,0 +1,16 @@
+Notes on CellProfiler pipeline:
+Senescence Classification in GBM
+
+Feel free to contact Dr. Lucy Martin (lucy.martin@ed.ac.uk) with any questions. 
+
+Experimental information and purpose of the pipeline:
+This pipeline was designed to quantify immunofluorescent staining of DAPI, Lamin B1, and P21 in the nuclei of GBM cells. Cells were cultured on glass cover slips, then fixed and stained for Lamin B1 (488-labelled) and P21 (555-labelled), and DAPI. Cells were imaged using an axioscan fluorescent microscope. The pipeline identified cells using DAPI, then uses these objects to export measurements relating to the size, shape, intensity, and distribution of staining in the DAPI, Lamin B1, and P21 channels. 
+
+How to use the pipeline:
+    1. Import image files into the ‘Images’ tab.
+    2. Extract metadata from your files in a way where images can be identified by channel. Other experimental conditions can also be extracted from either the file or folder names using a regular expression. 
+    3. Use the ‘NamesAndTypes’ module to assign channel names appropriately. In this pipeline we assign FITC to Lamin B1, DAPI to Nuclei, ad AF555 to P21. Our files contain multiple image sizes, so we also filter by series to select only one size of image for analysis. 
+    4. Then, start test mode. The number of ‘CorrectIlluminationCalculate’, and ‘CorrectIlluminationApply’ modules will need to be adjusted to the number of channels present. Diameter and threshold values can be adjusted in ‘IdentifyPrimaryObjects’ depending on the cell size and staining intensity in your images. 
+    5. Set up an output folder for saving results and update the ‘ExportToSpreadsheet’ module.
+    6. Run ‘Analyze Images’.
+    7. The output will consist of spreadsheets for ‘NucleiObject’, and ‘DilatedNuclei_1’ which both contain measurements for the selected parameters for DAPI, Lamin B1, and P21.
