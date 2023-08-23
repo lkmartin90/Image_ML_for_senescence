@@ -227,12 +227,15 @@ roc_auc_2 = auc(fpr_2, tpr_2)
 fpr_3, tpr_3, thresholds_3 = roc_curve(y_test, pred_probs_svm_3)
 roc_auc_3 = auc(fpr_3, tpr_3)
 
-display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2, estimator_name='example estimator')
-display_3 = RocCurveDisplay(fpr=fpr_3, tpr=tpr_3, roc_auc=roc_auc_3, estimator_name='example estimator')
+display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2, estimator_name='Train and test on subset')
+display_3 = RocCurveDisplay(fpr=fpr_3, tpr=tpr_3, roc_auc=roc_auc_3, estimator_name='Train on subset, test on all')
 display_2.plot()
 display_3.plot()
 plt.show()
 
+results_df = pd.DataFrame([pred_probs_svm_3, y_test]).T
+results_df = results_df.sort_values(by=[0])
+plot_ordered_classifier_score(results_df, "E31", "SVM")
 # pickle
 
 filename = 'E31_SVM_model.sav'

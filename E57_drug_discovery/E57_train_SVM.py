@@ -253,10 +253,14 @@ roc_auc_3 = auc(fpr_3, tpr_3)
 display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2,
                             estimator_name='Train on very senescent and very non-senescent cells, test on the same')
 display_3 = RocCurveDisplay(fpr=fpr_3, tpr=tpr_3, roc_auc=roc_auc_3,
-                            estimator_name='Train on very senescent and very non-senescent cells, test on all')
+                            estimator_name='Train on subset, test on all')
 display_2.plot()
 display_3.plot()
 plt.show()
+
+results_df = pd.DataFrame([pred_probs_svm_3, y_test]).T
+results_df = results_df.sort_values(by=[0])
+plot_ordered_classifier_score(results_df, "E57", "SVM")
 
 # pickle
 

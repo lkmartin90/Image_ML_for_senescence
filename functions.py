@@ -1007,16 +1007,19 @@ def plot_ordered_classifier_score(classifier_results, cell_line, classifier):
 
         """
 
-    fig = px.scatter(y=classifier_results[0], x=np.arange(len(classifier_results)), color=classifier_results[1], opacity=0.2)
+    fig = px.scatter(y=classifier_results[0], x=np.arange(len(classifier_results)), color=classifier_results[1],
+                     #color_continuous_scale=px.colors.diverging.RdYlGn ,
+                     opacity=0.2)
     fig.update_layout(
         font=dict(
-            size=20,
+            size=30,
         )
     )
     fig.update_layout(
         title=cell_line + " " + classifier,
         xaxis_title="Ordered cells",
         yaxis_title="SVM prediction score")
+    fig.update_traces(marker=dict(size=12))
     fig.show()
 
     return
