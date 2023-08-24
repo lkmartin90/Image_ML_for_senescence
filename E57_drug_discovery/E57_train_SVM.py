@@ -12,6 +12,8 @@ from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import auc
 from sklearn.metrics import roc_curve
 import pickle
+from sklearn.inspection import permutation_importance
+import plotly.graph_objects as go
 
 ################################################################
 # start by processing our E31 data and using it to train the machine learning model
@@ -194,11 +196,16 @@ print(x_train_full.shape)
 # Test and train on sensesent and non-sen
 
 # filter data for cells with only a score in either senescence or no senescence columns
-x_2_catagories = data_for_pca.copy()
-x_2_catagories = x_2_catagories[(x_2_catagories['Senescent'] == 1) | (x_2_catagories['Not Senescent'] == 1)]
+x_2_c = data_for_pca.copy()
+x_2_catagories = x_2_c[(x_2_c['Senescent'] == 1) | (x_2_c['Not Senescent'] == 1)]
 y_2 = x_2_catagories["Senescent"]
 
+x_2_rest = x_2_c[(x_2_c['Senescent'] != 1) & (x_2_c['Not Senescent'] != 1)]
+y_2_rest = x_2_rest["Senescent"]
+
+
 x_2_catagories = x_2_catagories[features_to_keep]
+x_2_rest = x_2_rest[features_to_keep]
 
 to_drop = []
 for column in x_2_catagories.columns:
@@ -207,23 +214,31 @@ for column in x_2_catagories.columns:
         if split_cols[2] == 'CorrLaminB1' or split_cols[2] == 'CorrP21':
             to_drop.append(column)
 x_2_catagories = x_2_catagories.drop(to_drop, axis=1)
+x_2_rest = x_2_rest.drop(to_drop, axis=1)
 
 # split into test and train
 x_train_2_full, x_test_2_full, y_train_2, y_test_2 = train_test_split(x_2_catagories, y_2, test_size=fraction_to_test)
+
+x_rest_test = pd.concat([x_train_2_full, x_2_rest])
+y_rest_test = pd.concat([y_train_2, y_2_rest])
 
 # train scaler based on control
 train_scaler_2 = StandardScaler().fit(x_train_2_full[x_train_2_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
 
 test_scaler_2 = StandardScaler().fit(x_test_2_full[x_test_2_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
 
+rest_scaler_2 = StandardScaler().fit(x_rest_test[x_rest_test['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
+
 # drop metadata
 
 x_train_2 = x_train_2_full.copy().drop(['Metadata_Radiated'], axis=1)
 x_test_2 = x_test_2_full.copy().drop(['Metadata_Radiated'], axis=1)
+x_rest_2 = x_rest_test.copy().drop(['Metadata_Radiated'], axis=1)
 
 #scale
 x_test_2 = test_scaler_2.transform(x_test_2)
 x_train_2 = train_scaler_2.transform(x_train_2)
+x_rest_2 = rest_scaler_2.transform(x_rest_2)
 
 # train on the 2 subtypes, test on the two subtypes
 clf_svm_2 = svm.SVC(kernel='rbf')
@@ -237,17 +252,16 @@ print("Precision:", metrics.precision_score(y_test_2, y_pred_svm_2))
 print("Recall:", metrics.recall_score(y_test_2, y_pred_svm_2))
 
 # train on the 2 subtypes, test on all
-y_pred_svm_3 = clf_svm_2.predict(x_test)
-pred_probs_svm_3 = clf_svm_2.decision_function(x_test)
-print("Train on very senescent and very non-senescent, test on all")
-print("Accuracy:", metrics.accuracy_score(y_test, y_pred_svm_3))
-print("Precision:", metrics.precision_score(y_test, y_pred_svm_3))
-print("Recall:", metrics.recall_score(y_test, y_pred_svm_3))
+y_pred_svm_3 = clf_svm_2.predict(x_rest_2)
+pred_probs_svm_3 = clf_svm_2.decision_function(x_rest_2)
+print("Accuracy:", metrics.accuracy_score(y_rest_test, y_pred_svm_3))
+print("Precision:", metrics.precision_score(y_rest_test, y_pred_svm_3))
+print("Recall:", metrics.recall_score(y_rest_test, y_pred_svm_3))
 
 fpr_2, tpr_2, thresholds_2 = roc_curve(y_test_2, pred_probs_svm_2)
 roc_auc_2 = auc(fpr_2, tpr_2)
 
-fpr_3, tpr_3, thresholds_3 = roc_curve(y_test, pred_probs_svm_3)
+fpr_3, tpr_3, thresholds_3 = roc_curve(y_rest_test, pred_probs_svm_3)
 roc_auc_3 = auc(fpr_3, tpr_3)
 
 display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2,
@@ -258,7 +272,7 @@ display_2.plot()
 display_3.plot()
 plt.show()
 
-results_df = pd.DataFrame([pred_probs_svm_3, y_test]).T
+results_df = pd.DataFrame([pred_probs_svm_3, y_rest_test]).T
 results_df = results_df.sort_values(by=[0])
 plot_ordered_classifier_score(results_df, "E57", "SVM")
 
@@ -266,3 +280,31 @@ plot_ordered_classifier_score(results_df, "E57", "SVM")
 
 filename = 'E57_SVM_model.sav'
 pickle.dump(clf_svm_2, open(filename, 'wb'))
+
+# find important parameters, can copy out, takes a while to run
+
+# perm_importance = permutation_importance(clf_svm_2, x_test, y_test)
+#
+# feature_names = x.columns
+# features = np.array(feature_names)
+#
+# sorted_idx = perm_importance.importances_mean.argsort()
+#
+# fig = go.Figure()
+# fig.add_trace(go.Bar(
+#     y=features[sorted_idx],
+#     x=perm_importance.importances_mean[sorted_idx],
+#     name='SF Zoo',
+#     orientation='h',
+#     marker=dict(
+#         color='blue',
+#         line=dict(color='darkblue', width=3), opacity = 0.6
+#     )
+# ))
+# fig.update_layout(
+#         font=dict(
+#             size=18,
+#         ),
+#     title = "E57 feature importance in SVM",
+#     )
+# fig.show()
