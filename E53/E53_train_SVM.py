@@ -30,7 +30,7 @@ data = pd.concat([E_53_NucleiObject, E_53_DilatedNuclei], axis=1)
 
 # Rescale intensity measures based on background levels
 
-E_53_image = pd.read_csv("../E53_LaminB1_P21_data/EE53_220323_P21_LaminB1Image.csv")
+E_53_image = pd.read_csv("../E53_LaminB1_P21_data/E53_220323_P21_LaminB1Image.csv")
 
 # subtract background from each image
 data = rescale_from_background(data, E_53_image)

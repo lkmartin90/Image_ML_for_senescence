@@ -54,7 +54,7 @@ data['Rad_number'] = data['Metadata_Radiated'].astype(str) + "_" + data['ImageNu
 # Rescale intensity measures based on background levels
 
 E_55_image_control = pd.read_csv("../E55_LaminB1_P21_data/E55_control_220323_P21_LaminB1Image.csv")
-E_55_image_radiated = pd.read_csv("../E55_LaminB1_P21_data/E57_rad_220323_P21_LaminB1Image.csv")
+E_55_image_radiated = pd.read_csv("../E55_LaminB1_P21_data/E55_rad_220323_P21_LaminB1Image.csv")
 
 # subtract background from each image
 data = rescale_from_background_E55(data, E_55_image_control, E_55_image_radiated)
