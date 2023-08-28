@@ -90,6 +90,8 @@ data_for_pca = data.dropna(axis='columns')
 data_for_pca.replace([np.inf, -np.inf], np.nan, inplace=True)
 data_for_pca = data_for_pca.dropna()
 
+data_for_pca.to_csv("E53_senescence_data.csv")
+
 ####################################################################
 # Machine learning
 ####################################################################
@@ -195,8 +197,8 @@ x_2_rest = x_2_rest.drop(to_drop, axis=1)
 # split into test and train
 x_train_2_full, x_test_2_full, y_train_2, y_test_2 = train_test_split(x_2_catagories, y_2, test_size=fraction_to_test)
 
-x_rest_test = pd.concat([x_train_2_full, x_2_rest])
-y_rest_test = pd.concat([y_train_2, y_2_rest])
+x_rest_test = pd.concat([x_test_2_full, x_2_rest])
+y_rest_test = pd.concat([y_test_2, y_2_rest])
 
 # train scaler based on control
 train_scaler_2 = StandardScaler().fit(x_train_2_full[x_train_2_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))

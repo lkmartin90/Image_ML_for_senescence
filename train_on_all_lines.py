@@ -1,5 +1,4 @@
 import sys
-
 sys.path.append("..")
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -12,122 +11,25 @@ from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import auc
 from sklearn.metrics import roc_curve
 import pickle
-from sklearn.inspection import permutation_importance
-import plotly.graph_objects as go
 
-################################################################
-# start by processing our E31 data and using it to train the machine learning model
-################################################################
+E31 = pd.read_csv('./E31_drug_discovery/E31_senescence_data.csv')
+E57 = pd.read_csv('./E57_drug_discovery/E57_senescence_data.csv')
+E55 = pd.read_csv('./E55/E55_senescence_data.csv')
+E53 = pd.read_csv('./E53/E53_senescence_data.csv')
 
-#  Read in data and pre-process
+E55['Not Senescent'] = np.where(E55['Senescent']==1, 0, 1)
 
-E_57_control_NucleiObject = pd.read_csv("../E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1NucleiObject.csv")
-E_57_radiated_NucleiObject = pd.read_csv("../E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1NucleiObject.csv")
 
-E_57_control_NucleiObject = data_processing_Nuclei(E_57_control_NucleiObject)
-E_57_radiated_NucleiObject = data_processing_Nuclei(E_57_radiated_NucleiObject)
-
-E_57_control_DilatedNuclei = pd.read_csv("../E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1DilatedNuclei_1.csv")
-E_57_control_DilatedNuclei = data_processing_Dilated(E_57_control_DilatedNuclei)
-E_57_radiated_DilatedNuclei = pd.read_csv("../E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1DilatedNuclei_1.csv")
-E_57_radiated_DilatedNuclei = data_processing_Dilated(E_57_radiated_DilatedNuclei)
-
-control_data = pd.concat([E_57_control_NucleiObject, E_57_control_DilatedNuclei], axis=1)
-radiated_data = pd.concat([E_57_radiated_NucleiObject, E_57_radiated_DilatedNuclei], axis=1)
-
-control_data['Metadata_Radiated'] = "control"
-radiated_data['Metadata_Radiated'] = "radiated"
-
-control_data["CELL_ID"] = control_data['Metadata_CellLine'].astype(str) + "_" + \
-                          control_data['ImageNumber'].astype(str) + "_" + control_data['ObjectNumber'].astype(str) \
-                          + "_" + control_data['Metadata_Radiated'].astype(str)
-radiated_data["CELL_ID"] = radiated_data['Metadata_CellLine'].astype(str) + "_" + \
-                           radiated_data['ImageNumber'].astype(str) + "_" + radiated_data['ObjectNumber'].astype(str) \
-                           + "_" + radiated_data['Metadata_Radiated'].astype(str)
-control_data = control_data.set_index("CELL_ID")
-radiated_data = radiated_data.set_index("CELL_ID")
-
-# create one data object containing all the data
-data = pd.concat([control_data, radiated_data])
-data['Rad_number'] = data['Metadata_Radiated'].astype(str) + "_" + data['ImageNumber'].astype(str)
-
-# Rescale intensity measures based on background levels
-
-E_57_image_control = pd.read_csv("../E57_LaminB1_P21_data/E57_control_220323_P21_LaminB1Image.csv")
-E_57_image_radiated = pd.read_csv("../E57_LaminB1_P21_data/E57_rad_220323_P21_LaminB1Image.csv")
-
-# subtract background from each image
-data = rescale_from_background_E55(data, E_57_image_control, E_57_image_radiated)
-
-# check columns
-# data.columns[0:100]
-
-# Remove columns that are entirely NaN
-
-data = data.dropna(axis='columns')
-
-# Remove cells that are an outlier in many catagories
-
-data = find_outliers_E55(data, 70)
-
-# Filter based on cell size
-
-data = data[data['AreaShape_Area'] > 150]
-
-# Filter based on Std dev
-
-data = data[data['Intensity_StdIntensity_CorrNuclei'] > 0.001]
-
-# Create new features
-
-data = create_new_features(data)
-
-# Use this to add a column labelling those with low LaminB1 and high P21 as senescent
-
-Lam_cutoff = 0.0042
-P21_cutoff = 0.0022
-
-data['Senescent'] = 0
-data.loc[(data.Intensity_MeanIntensity_CorrLaminB1 < Lam_cutoff) & (
-        data.Intensity_MeanIntensity_CorrP21 > P21_cutoff), 'Senescent'] = 1
-
-Lam_cutoff_1 = 0.005
-P21_cutoff_1 = 0.0019
-
-data['Not Senescent'] = 0
-data.loc[(data.Intensity_MeanIntensity_CorrLaminB1 > Lam_cutoff_1) & (
-        data.Intensity_MeanIntensity_CorrP21 < P21_cutoff_1), 'Not Senescent'] = 1
-
-print('Number of cells defined as senescent:')
-print(sum(data['Senescent']))
-
-print('Number of cells defined as not senescent:')
-print(sum(data['Not Senescent']))
-
-# Project onto senescence axis
-
-data = project_onto_line_pca(data, 'Intensity_MeanIntensity_CorrLaminB1', 'Intensity_MeanIntensity_CorrP21')
-
-# Drop column with nan as all of the entries
-data_for_pca = data.dropna(axis='columns')
-# replace an infinities with nan, then drop cells with nan
-data_for_pca.replace([np.inf, -np.inf], np.nan, inplace=True)
-data_for_pca = data_for_pca.dropna()
-
-data_for_pca.to_csv("E57_senescence_data.csv")
-
-####################################################################
-# Machine learning
-####################################################################
+data = pd.concat([E31, E57, E55, E53], ignore_index=True)
 
 # Split data into test and train
 
-y = data_for_pca["Senescent"]
+y = data["Senescent"]
 
 # remove everything not DAPI related
-x = data_for_pca.copy()
+x = data.copy()
 x = x.drop(
-    ['Metadata_CellLine', 'ImageNumber', 'ObjectNumber', 'Number_Object_Number', 'Senescent',
+    ['ImageNumber', 'ObjectNumber', 'Number_Object_Number',
      'Not Senescent'], axis=1)
 
 features_to_keep_template = ["AreaShape_Area", "AreaShape_Compactness", "AreaShape_Eccentricity",
@@ -142,19 +44,21 @@ features_to_keep_template = ["AreaShape_Area", "AreaShape_Compactness", "AreaSha
                              "Intensity_MaxIntensity", "Intensity_MeanIntensityEdge", "Intensity_MeanIntensity",
                              "Intensity_MedianIntensity",
                              "Intensity_MinIntensityEdge", "Intensity_MinIntensity", "Intensity_StdIntensityEdge",
-                             "Intensity_StdIntensity", "Intensity_UpperQuartileIntensity", "cell_line", "Metadata_Radiated"]
+                             "Intensity_StdIntensity", "Intensity_UpperQuartileIntensity", 'Metadata_Radiated']
 
 # keep only features that we have drug discovery data for
 
-features_to_keep = []
+features_to_keep = ["Metadata_CellLine", "Senescent"]
 for feature in x.columns:
     split_array = feature.split('_')
-    double_name = split_array[0] + "_" + split_array[1]
-    if double_name in features_to_keep_template:
-        features_to_keep.append(feature)
+    if len(split_array)> 1:
+        double_name = split_array[0] + "_" + split_array[1]
+        if double_name in features_to_keep_template:
+            features_to_keep.append(feature)
 
 x = x[features_to_keep]
 
+# do not delete - deals with intensities that arn't DAPI
 to_drop = []
 for column in x.columns:
     split_cols = column.split('_')
@@ -169,6 +73,8 @@ print(x.shape)
 # split into test and train
 
 fraction_to_test = 0.5
+x = x.drop(['Metadata_CellLine'], axis=1)
+x = x.drop(['Senescent'], axis=1)
 
 # split into test and train
 x_train_full, x_test_full, y_train, y_test = train_test_split(x, y, test_size=fraction_to_test)
@@ -188,6 +94,7 @@ x_test = x_test_full.copy().drop(['Metadata_Radiated'], axis=1)
 x_test = test_scaler.transform(x_test)
 x_train = train_scaler.transform(x_train)
 
+
 print("Shape of training data")
 print(x_train.shape)
 
@@ -198,23 +105,23 @@ print(x_train_full.shape)
 # Test and train on sensesent and non-sen
 
 # filter data for cells with only a score in either senescence or no senescence columns
-x_2_c = data_for_pca.copy()
+x_2_c = data.copy()
 x_2_catagories = x_2_c[(x_2_c['Senescent'] == 1) | (x_2_c['Not Senescent'] == 1)]
 y_2 = x_2_catagories["Senescent"]
 
 x_2_rest = x_2_c[(x_2_c['Senescent'] != 1) & (x_2_c['Not Senescent'] != 1)]
 y_2_rest = x_2_rest["Senescent"]
 
-
+# restrict to features we want, plus Metadata_Radiated
 x_2_catagories = x_2_catagories[features_to_keep]
 x_2_rest = x_2_rest[features_to_keep]
 
-to_drop = []
 for column in x_2_catagories.columns:
     split_cols = column.split('_')
     if len(split_cols) > 2:
         if split_cols[2] == 'CorrLaminB1' or split_cols[2] == 'CorrP21':
             to_drop.append(column)
+
 x_2_catagories = x_2_catagories.drop(to_drop, axis=1)
 x_2_rest = x_2_rest.drop(to_drop, axis=1)
 
@@ -223,6 +130,15 @@ x_train_2_full, x_test_2_full, y_train_2, y_test_2 = train_test_split(x_2_catago
 
 x_rest_test = pd.concat([x_test_2_full, x_2_rest])
 y_rest_test = pd.concat([y_test_2, y_2_rest])
+cell_lines = x_rest_test["Metadata_CellLine"]
+sen = x_rest_test["Senescent"]
+
+x_rest_test = x_rest_test.drop(['Metadata_CellLine'], axis=1)
+x_train_2_full = x_train_2_full.drop(['Metadata_CellLine'], axis=1)
+x_test_2_full = x_test_2_full.drop(['Metadata_CellLine'], axis=1)
+x_rest_test = x_rest_test.drop(['Senescent'], axis=1)
+x_train_2_full = x_train_2_full.drop(['Senescent'], axis=1)
+x_test_2_full = x_test_2_full.drop(['Senescent'], axis=1)
 
 # train scaler based on control
 train_scaler_2 = StandardScaler().fit(x_train_2_full[x_train_2_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
@@ -254,6 +170,9 @@ print("Precision:", metrics.precision_score(y_test_2, y_pred_svm_2))
 print("Recall:", metrics.recall_score(y_test_2, y_pred_svm_2))
 
 # train on the 2 subtypes, test on all
+
+
+print("Train on very senescent and very non-senescent, test on all")
 y_pred_svm_3 = clf_svm_2.predict(x_rest_2)
 pred_probs_svm_3 = clf_svm_2.decision_function(x_rest_2)
 print("Accuracy:", metrics.accuracy_score(y_rest_test, y_pred_svm_3))
@@ -266,47 +185,36 @@ roc_auc_2 = auc(fpr_2, tpr_2)
 fpr_3, tpr_3, thresholds_3 = roc_curve(y_rest_test, pred_probs_svm_3)
 roc_auc_3 = auc(fpr_3, tpr_3)
 
-display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2,
-                            estimator_name='Train on very senescent and very non-senescent cells, test on the same')
-display_3 = RocCurveDisplay(fpr=fpr_3, tpr=tpr_3, roc_auc=roc_auc_3,
-                            estimator_name='Train on subset, test on all')
+display_2 = RocCurveDisplay(fpr=fpr_2, tpr=tpr_2, roc_auc=roc_auc_2, estimator_name='Train and test on subset')
+display_3 = RocCurveDisplay(fpr=fpr_3, tpr=tpr_3, roc_auc=roc_auc_3, estimator_name='Train on subset, test on all')
 display_2.plot()
 display_3.plot()
 plt.show()
 
 results_df = pd.DataFrame([pred_probs_svm_3, y_rest_test]).T
 results_df = results_df.sort_values(by=[0])
-plot_ordered_classifier_score(results_df, "E57", "SVM")
-
+plot_ordered_classifier_score(results_df, "All", "SVM")
 # pickle
 
-filename = 'E57_SVM_model.sav'
+filename = 'AllLines_SVM_model.sav'
 pickle.dump(clf_svm_2, open(filename, 'wb'))
 
-# find important parameters, can copy out, takes a while to run
+# calculate fraction senescent of each cell line
 
-# perm_importance = permutation_importance(clf_svm_2, x_test, y_test)
-#
-# feature_names = x.columns
-# features = np.array(feature_names)
-#
-# sorted_idx = perm_importance.importances_mean.argsort()
-#
-# fig = go.Figure()
-# fig.add_trace(go.Bar(
-#     y=features[sorted_idx],
-#     x=perm_importance.importances_mean[sorted_idx],
-#     name='SF Zoo',
-#     orientation='h',
-#     marker=dict(
-#         color='blue',
-#         line=dict(color='darkblue', width=3), opacity = 0.6
-#     )
-# ))
-# fig.update_layout(
-#         font=dict(
-#             size=18,
-#         ),
-#     title = "E57 feature importance in SVM",
-#     )
-# fig.show()
+x_rest_test["sen_prediction"] = y_pred_svm_3
+x_rest_test["sen_prob"] = pred_probs_svm_3
+x_rest_test["Metadata_CellLine"] = cell_lines
+x_rest_test["Senescent"] = sen
+print(x_rest_test.groupby(by=["Metadata_CellLine"]).sum()["sen_prediction"])
+print(x_rest_test.groupby(by=["Metadata_CellLine"]).count()["sen_prediction"])
+
+for cell_line in ["E31", "E57", "E55", "E53"]:
+    temp = x_rest_test[x_rest_test["Metadata_CellLine"] == cell_line]
+
+    fpr, tpr, thresholds = roc_curve(temp["Senescent"], temp["sen_prob"])
+    roc_auc = auc(fpr, tpr)
+
+    display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name=cell_line + ' Train on subset, test on all')
+    display.plot()
+    plt.show()
+

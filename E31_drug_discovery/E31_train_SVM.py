@@ -13,6 +13,8 @@ from sklearn.metrics import roc_curve
 import pickle
 from sklearn.inspection import permutation_importance
 import plotly.graph_objects as go
+import shap
+shap.initjs()
 
 ################################################################
 # start by processing our E31 data and using it to train the machine learning model
@@ -89,6 +91,8 @@ data_for_pca = data.dropna(axis='columns')
 # replace an infinities with nan, then drop cells with nan
 data_for_pca.replace([np.inf, -np.inf], np.nan, inplace=True)
 data_for_pca = data_for_pca.dropna()
+
+data_for_pca.to_csv("E31_senescence_data.csv")
 
 ####################################################################
 # Machine learning
@@ -195,8 +199,8 @@ x_2_rest = x_2_rest.drop(to_drop, axis=1)
 # split into test and train
 x_train_2_full, x_test_2_full, y_train_2, y_test_2 = train_test_split(x_2_catagories, y_2, test_size=fraction_to_test)
 
-x_rest_test = pd.concat([x_train_2_full, x_2_rest])
-y_rest_test = pd.concat([y_train_2, y_2_rest])
+x_rest_test = pd.concat([x_test_2_full, x_2_rest])
+y_rest_test = pd.concat([y_test_2, y_2_rest])
 
 # train scaler based on control
 train_scaler_2 = StandardScaler().fit(x_train_2_full[x_train_2_full['Metadata_Radiated'] == "control"].drop(['Metadata_Radiated'], axis=1))
@@ -284,3 +288,7 @@ pickle.dump(clf_svm_2, open(filename, 'wb'))
 #     title = "E31 feature importance in SVM",
 #     )
 # fig.show()
+
+# explainer = shap.KernelExplainer(clf_svm_2.predict, x_train_2)
+# shap_values = explainer.shap_values(x_train_2)
+# shap.summary_plot(shap_values[0], x_train_2)
