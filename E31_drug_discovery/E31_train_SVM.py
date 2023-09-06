@@ -291,4 +291,4 @@ pickle.dump(clf_svm_2, open(filename, 'wb'))
 
 # explainer = shap.KernelExplainer(clf_svm_2.predict, x_train_2)
 # shap_values = explainer.shap_values(x_train_2)
-# shap.summary_plot(shap_values[0], x_train_2)
+# shap.summary_plot(shap_values, x_train_2)

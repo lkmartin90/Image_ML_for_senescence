@@ -14,6 +14,8 @@ from sklearn.metrics import roc_curve
 import pickle
 from sklearn.inspection import permutation_importance
 import plotly.graph_objects as go
+import shap
+shap.initjs()
 
 ################################################################
 # start by processing our E31 data and using it to train the machine learning model
@@ -310,3 +312,7 @@ pickle.dump(clf_svm_2, open(filename, 'wb'))
 #     title = "E57 feature importance in SVM",
 #     )
 # fig.show()
+
+explainer = shap.KernelExplainer(clf_svm_2.predict, x_train_2)
+shap_values = explainer.shap_values(x_train_2)
+shap.summary_plot(shap_values, x_train_2)

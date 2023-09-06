@@ -209,6 +209,7 @@ print(x_rest_test.groupby(by=["Metadata_CellLine"]).sum()["sen_prediction"])
 print(x_rest_test.groupby(by=["Metadata_CellLine"]).count()["sen_prediction"])
 
 for cell_line in ["E31", "E57", "E55", "E53"]:
+    print(cell_line)
     temp = x_rest_test[x_rest_test["Metadata_CellLine"] == cell_line]
 
     fpr, tpr, thresholds = roc_curve(temp["Senescent"], temp["sen_prob"])
@@ -217,4 +218,8 @@ for cell_line in ["E31", "E57", "E55", "E53"]:
     display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name=cell_line + ' Train on subset, test on all')
     display.plot()
     plt.show()
+
+    print("Accuracy:", metrics.accuracy_score(temp["Senescent"], temp["sen_prediction"]))
+    print("Precision:", metrics.precision_score(temp["Senescent"], temp["sen_prediction"]))
+    print("Recall:", metrics.recall_score(temp["Senescent"], temp["sen_prediction"]))
 
