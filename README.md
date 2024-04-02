@@ -52,3 +52,5 @@ Machine learning to detect senescent glioblastoma cells and to find compounds wh
 5. Run steps 2 - 5 again, replacing "LOPAC" with "targetmol".
 6. Run steps 1 - 5 again, replacing E31 with E57.
 7. Run *find_interesting_compounds.ipynb* to find compounds that induce senescence in both cell types.
+
+Alternatively, run "run_post_SVM_training.sh" after step1.
